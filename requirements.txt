@@ -1,0 +1,5 @@
+configParser
+mysql.connector
+requests
+boto3
+awscli
