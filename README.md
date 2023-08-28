@@ -8,7 +8,7 @@ airflow 띄우기
 
 1. docker image 만들기
 ```
-sudo docker build -t airflow:base
+sudo docker build -t airflow:base .
 ```
 
 2. 생성된 이미지로 compose up
