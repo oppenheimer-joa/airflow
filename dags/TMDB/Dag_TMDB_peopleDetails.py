@@ -13,7 +13,7 @@ SERVER_API = Variable.get("SERVER_API_blah")
 default_args = {
     'owner': 'sms',
     'depends_on_past': True,
-    'start_date': datetime(2023, 8, 1, tzinfo=local_tz),
+    'start_date': datetime(2022, 8, 1, tzinfo=local_tz),
     'retries': 3,
     "provide_context":True,
 }
@@ -64,7 +64,7 @@ def check_logic(category, date, **context):
 
 
 category = 'peopleDetail'
-date = "{{execution_date.add(days=364).strftime('%Y-%m-%d')}}"
+date = "{{execution_date.add(days=364, hours=9).strftime('%Y-%m-%d')}}"
 api_url_get_data = f"{SERVER_API}/tmdb/people-details?date={date}"
 
 
