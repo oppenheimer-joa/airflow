@@ -30,7 +30,7 @@ dag = DAG(
 
 # Airflow Variables
 fastapi_host = Variable.get_val["fastapi_host"]
-date = "{{execution_date.add(days=364).strftime('%Y-%m-%d')}}"
+date = "{{execution_date.add(days=364, hours=9).strftime('%Y-%m-%d')}}"
 
 # start
 start = EmptyOperator(
@@ -39,10 +39,11 @@ start = EmptyOperator(
 )
 
 # insert
+# curl -X GET http://34.64.41.133:2233/tmdb/mysql-movie?date=2023-08-25
 insert = BashOperator(
     task_id="insert",
     bash_command=f'''
-    curl {fastapi_host}/mysql-movie?date={date}
+    curl -X GET {fastapi_host}/mysql-movie?date={date}
     ''',
     dag=dag
 )

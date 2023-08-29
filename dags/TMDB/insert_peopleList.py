@@ -4,7 +4,6 @@ import pendulum
 from airflow import DAG
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.bash import BashOperator
-from airflow.operators.python import BranchPythonOperator
 from airflow.models.variable import Variable
 
 local_tz = pendulum.timezone('Asia/Seoul')
@@ -19,9 +18,9 @@ default_args = {
 
 # 프로젝트마다 변동될 DAG 사항들 기재
 dag = DAG(
-    dag_id='TMDB.insert.peopleList',
-    description='update MySQL databases\' people list',
-    tags=['TMDB', 'MySQL', 'peopleList'],
+    dag_id='TMDB.insert.movieList',
+    description='update MySQL databases\' movie list',
+    tags=['TMDB', 'MySQL', 'movieList'],
     max_active_runs=1, 
     concurrency=1,
     start_date=datetime(year=2022, month=8, day=1, hour=0, minute=0, tzinfo=local_tz),
@@ -30,8 +29,8 @@ dag = DAG(
 )
 
 # Airflow Variables
-fastapi_host = Variable.get["fastapi_host"]
-date = "{{execution_date.add(days=364).strftime('%Y-%m-%d')}}"
+fastapi_host = Variable.get_val["fastapi_host"]
+date = "{{execution_date.add(days=364, hours=9).strftime('%Y-%m-%d')}}"
 
 # start
 start = EmptyOperator(
@@ -40,10 +39,11 @@ start = EmptyOperator(
 )
 
 # insert
+# curl -X GET http://34.64.41.133:2233/tmdb/mysql-people?date=2023-08-25
 insert = BashOperator(
     task_id="insert",
     bash_command=f'''
-    curl {fastapi_host}/mysql-people?date={date}
+    curl -X GET {fastapi_host}/mysql-people?date={date}
     ''',
     dag=dag
 )
