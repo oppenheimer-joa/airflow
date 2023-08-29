@@ -64,7 +64,7 @@ def check_logic(category, date, **context):
 
 
 category = 'peopleDetail'
-date = "{{execution_date.add(hours=9).strftime('%Y-%m-%d')}}"
+date = "{{execution_date.add(days=364).strftime('%Y-%m-%d')}}"
 api_url_get_data = f"{SERVER_API}/tmdb/people-details?date={date}"
 
 
