@@ -9,13 +9,11 @@ import pendulum, mysql.connector
 KST = pendulum.timezone('Asia/Seoul')
 
 default_args ={
-	'owner': 'v0.1.0/sms',
+	'owner': 'v0.4.0/yoda/dev',
 	'depends_on_past' : False,
-	'start_date': datetime(2023,1,1, tzinfo=KST)}
+	'start_date': datetime(2023,6,10, tzinfo=KST)}
 
-dag = DAG('get_spotify_datas', default_args = default_args, max_active_runs= 1, tags=['수집','spotify'] , schedule_interval= '0 10 * * 1')
-
-params_date = "{{execution_date.strftime('%Y-%m-%d')}}"
+dag = DAG('get_spotify_datas', default_args = default_args, max_active_runs= 1, tags=['수집','spotify'] , schedule_interval= '0 20 * * 5')
 
 def gen_curl_operator(name: str, url : str, trigger_opt: str):
     #curl 싸개
@@ -35,7 +33,7 @@ def gen_curl_operator(name: str, url : str, trigger_opt: str):
 
     return bash_task
 
-def extract_moiveCode_data():
+def extract_moiveCode_data(execution_date):
 
 	DB_HOST = Variable.get("DB_HOST")
 	DB_USER = Variable.get("DB_USER")
@@ -53,26 +51,25 @@ def extract_moiveCode_data():
 		password=DB_PWD,
 		database=DB_DB
 	)
-
+	exe_dt = execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
+	print(exe_dt)
 	cursor = conn.cursor()
-	#print(params_date)
-	query = f"select * from movie_all where date_gte = '{{execution_date}}'"
-	
+	query = f"select * from movie_all where date_gte = '{exe_dt}'"
+	print(query)
 	cursor.execute(query)
 	raw_datas = cursor.fetchall()
 	for i in range(len(raw_datas)):
-		movieCode_list.append(data[i][0]) 
+		movieCode_list.append(raw_datas[i][0]) 
 	conn.close()
-	print(movieCode_list)
 	return movieCode_list
 	
-
 def send_curl_requests(movieCode_list):
+	print(movieCode_list)
 	import subprocess
 	base_url = "http://192.168.90.128:4551/spotify/movie-ost"
-	for row in data:
-		movie_code = row[1]
-		curl_url = f"{base_url}?movieCode={movie_code}"
+
+	for code in movieCode_list:
+		curl_url = f"{base_url}?movieCode={code}"
 		command = ["curl", curl_url]
 
 		try:
@@ -80,6 +77,10 @@ def send_curl_requests(movieCode_list):
 			print("Curl command output:", result.stdout)
 		except subprocess.CalledProcessError as e:
 			print("err:", e.stderr)
+
+start_task = EmptyOperator(
+	task_id = 'start_spotify_datas_task',
+	dag = dag)
 
 extract_task = PythonOperator(
 	task_id='extract_movie_codes',
@@ -91,12 +92,16 @@ extract_task = PythonOperator(
 send_task = PythonOperator(
 	task_id='send_curl_requests',
 	python_callable=send_curl_requests,
-	op_args=[],
+	op_args=[extract_task.output],
 	provide_context=True,
 	dag=dag
 )
 
-extract_task >> send_task
+end_task = EmptyOperator(
+	task_id = 'finish_spotify_datas_task',
+	dag = dag)
+
+start_task >> extract_task >> send_task >> end_task
 
 
 
