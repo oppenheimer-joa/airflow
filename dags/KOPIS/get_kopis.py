@@ -59,7 +59,7 @@ def get_detail(execution_date):
 
 
 start = EmptyOperator(task_id = 'Stark.task', dag = dag)
-finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
+finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag = dag)
 
 load_to_db = PythonOperator(task_id="Load.Kopis_to_DB",
                             python_callable=load_db,
