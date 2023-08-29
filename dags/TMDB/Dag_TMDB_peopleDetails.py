@@ -19,7 +19,7 @@ default_args = {
 }
 
 dag = DAG(
-    'test-tmdb-similar-api',
+    'test-tmdb-people-api',
     default_args=default_args,
     schedule="0 1 * * 5", #매주 금요일 1AM
     user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
@@ -49,7 +49,7 @@ def get_api_data(api_url, **context):
 def check_logic(category, date, **context):
     # XCom에서 값을 가져옵니다.
     ti = context['ti']
-    xcom = ti.xcom_pull(task_ids='Get.TMDB_Similar_Data', key='db_counts')
+    xcom = ti.xcom_pull(task_ids='Get.TMDB_People_Data', key='db_counts')
     print(xcom)
     api_url_check_data = f"{SERVER_API}/check/tmdb?xcom={xcom}&category={category}&date={date}"
     response = requests.get(api_url_check_data)
@@ -63,13 +63,13 @@ def check_logic(category, date, **context):
         return 'DONE'
 
 
-category = 'movieSimilar'
+category = 'peopleDetail'
 date = "{{execution_date.add(hours=9).strftime('%Y-%m-%d')}}"
-api_url_get_data = f"{SERVER_API}/tmdb/movie-similar?date={date}"
+api_url_get_data = f"{SERVER_API}/tmdb/people-details?date={date}"
 
 
 start = EmptyOperator(task_id = 'Start.task', dag = dag)
-get_data = PythonOperator(task_id = "Get.TMDB_Similar_Data", python_callable=get_api_data, op_args=[api_url_get_data], dag = dag)
+get_data = PythonOperator(task_id = "Get.TMDB_Images_Data", python_callable=get_api_data, op_args=[api_url_get_data], dag = dag)
 finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
 
 # start >> get_data >> finish

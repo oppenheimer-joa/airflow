@@ -8,7 +8,7 @@ import pendulum
 
 local_tz = pendulum.timezone("Asia/Seoul")
 
-SERVER_API = Variable.get("SERVER_API_movieDetails")
+SERVER_API = Variable.get("SERVER_API_blah")
 
 default_args = {
     'owner': 'sms',
