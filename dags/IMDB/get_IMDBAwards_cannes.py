@@ -34,14 +34,14 @@ dag = DAG(
 ## 수상작 정보 크롤링 API 호출
 def imdb_data_load(event, year) :
     api_url = f"http://{SERVER_API}/imdb/award?event={event}&year={year}"
-    response = requests.get(api_url).get()
+    response = requests.get(api_url).json()
 
     print(response)
 
 #정합성  체크
 def check_logic(event, year):
     api_url = f"http://{SERVER_API}/check/imdb?event={event}&year={year}"
-    response = requests.get(api_url).get()
+    response = requests.get(api_url).json()
 
     if response == '1' :
         return "ERROR"
@@ -56,11 +56,12 @@ finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag 
 
 load_tasks = PythonOperator(task_id="Save.Imdb_cannas",
                             python_callable=imdb_data_load,
-                            op_kwargs={"event": "canns", "year": "{{next_execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}" },
+                            op_kwargs={"event": "cannes", "year": "{{next_execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}" },
                             dag=dag)
 
 branching = BranchPythonOperator(task_id='Check.logic',
                                  python_callable=check_logic,
+                                 op_kwargs={"event": "cannes", "year": "{{next_execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}" },
                                  dag=dag)
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
