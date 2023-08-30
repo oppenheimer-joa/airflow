@@ -1,8 +1,10 @@
 airflow
+
 v0.7.0/test 
+
 병합 및 테스트
-병합 BR 리스트
 v0.1.0 ~ v0.6.0
+
 
 문서 찍먹하기 : https://www.notion.so/Airflow-docker-airflow-a5ec30b6e391443f9443a2f6fae88e46?pvs=4
 
