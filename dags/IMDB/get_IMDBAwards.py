@@ -33,7 +33,6 @@ dag = DAG(
 # 함수 정의
 ## 수상작 정보 크롤링 API 호출
 def imdb_data_load(event, year) :
-    
     api_url = f"http://{SERVER_API}/imdb/award?event={event}&year={year}"
     response = requests.get(api_url).get()
 
@@ -62,7 +61,6 @@ load_tasks = PythonOperator(task_id="Save.Imdb_cannas",
 
 branching = BranchPythonOperator(task_id='Check.logic',
                                  python_callable=check_logic,
-                                 op_kwargs={"event": "canns", "year": "{{next_execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}" },
                                  dag=dag)
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
