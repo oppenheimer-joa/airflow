@@ -28,7 +28,7 @@ def send_load_curl(event, year):
 def send_check_curl(event, year):
     import subprocess, sys
     base_url = f"192.168.90.128:4551/check/imdb/"
-    curl_url = f"{base_url}?event='{event}'&year'{year}'"
+    curl_url = f"{base_url}?event='{event}'&year='{year}'"
     command = f"curl '{curl_url}'"
     output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if output == "1":
