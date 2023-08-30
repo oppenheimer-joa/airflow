@@ -1,11 +1,10 @@
 from airflow import DAG
 from datetime import datetime, timedelta
-from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
+from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.models.variable import Variable
 import pendulum
-import requests, json, os
+import requests
 
 local_tz = pendulum.timezone("Asia/Seoul")
 SERVER_API = Variable.get("SERVER_API")
@@ -22,64 +21,54 @@ default_args = {
 }
 
 dag = DAG(
-  dag_id = 'IMDB_DATA',
-  description = 'IMDB data pipeline',
-  tags = ['airflow','IMDB'],
-  schedule_interval = '* * 1 * *',   ### 스케줄 정의 필요
+  dag_id = 'IMDB_CANNES_DATA',
+  description = 'IMDB data pipeline for cannes',
+  tags = ['IMDB','Awards','cannes'],
+  schedule_interval = '* * 1 7 *',   ### 스케줄 정의 필요 # 임시 매년 7월 1일 
   user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
   default_args=default_args
 )
 
 
 # 함수 정의
-## 수상작 정보 크롤링 함수
+## 수상작 정보 크롤링 API 호출
 def imdb_data_load(event, year) :
-    api_url = f"http://{SERVER_API}/imdb/award?event={event}&year={year}"
-    response = requests.get(api_url).json()
-    print("응답 수행 완료")
-    return response
     
+    api_url = f"http://{SERVER_API}/imdb/award?event={event}&year={year}"
+    response = requests.get(api_url).get()
 
-## 정합성 체크 함수
-def imdb_file_check(event, year):  ### params : event,year
-    file_path = f"/api/datas/IMDb/imdb_{event}_{year}.json"
-    if os.path.isfile(file_path):
-        size = os.path.getsize(file_path)
-        if size >= 8000:
-            return f"{file_path} size is {size} Byte"
+    print(response)
+
+#정합성  체크
+def check_logic(event, year):
+    api_url = f"http://{SERVER_API}/check/imdb?event={event}&year={year}"
+    response = requests.get(api_url).get()
+
+    if response == '1' :
+        return "ERROR"
+    
     else:
-        return "1"
-
+        return "DONE"
+    
 
 # Operator 정의
+start = EmptyOperator(task_id = 'Stark.task', dag = dag)
+finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag = dag)
 
-start = EmptyOperator(task_id = 'Start.task', dag = dag)
-finish_load = EmptyOperator(task_id = 'Load.Done', dag = dag)
-finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
-# error = EmptyOperator(task_id = 'ERROR', dag = dag)
+load_tasks = PythonOperator(task_id="Save.Imdb_cannas",
+                            python_callable=imdb_data_load,
+                            op_kwargs={"event": "canns", "year": "{{next_execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}" },
+                            dag=dag)
 
-load_tasks = list()
-for event,code in EVENT_IDS.items() :
-    load_task = PythonOperator(task_id=f"Get.IMDB_{event}_data",
-                          python_callable=imdb_data_load,
-                          op_kwargs={
-                              "event" : "{{code}}",
-                              "year": "{{execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}"
-                              },
-                          dag=dag)
-    load_tasks.append(load_task)
+branching = BranchPythonOperator(task_id='Check.logic',
+                                 python_callable=check_logic,
+                                 op_kwargs={"event": "canns", "year": "{{next_execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}" },
+                                 dag=dag)
 
-
-check_tasks = list()
-for event,code in EVENT_IDS.items() :
-    check_task = PythonOperator(task_id=f"Check.IMDB_{event}_data",
-                          python_callable=imdb_file_check,
-                          op_kwargs={
-                              "event" : "{{code}}",
-                              "year": "{{execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}"
-                              },
-                          dag=dag)
-    check_tasks.append(check_task)
+error = EmptyOperator(task_id = 'ERROR', dag = dag)
+done = EmptyOperator(task_id = 'DONE', dag = dag)
     
 # Operator 배치
-start >> load_tasks >> finish_load >> check_tasks >> finish ## 마지막 분기 수정해주세용
+start >> load_tasks >> branching
+branching >> error >> finish 
+branching >> done >> finish 
