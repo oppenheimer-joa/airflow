@@ -12,7 +12,7 @@ exe_date = "{{ execution_date.strftime('%Y%m%d') }}"
 
 
 default_args ={
-    'owner' : 'v0.1.0/woorek/dev',
+    'owner' : 'sms/v0.7.0',
     'depends_on_past' : False,
     'start_date' : datetime(2023, 1, 1, tzinfo=KST)
 }

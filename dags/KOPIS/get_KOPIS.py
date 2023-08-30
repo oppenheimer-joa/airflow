@@ -11,22 +11,23 @@ local_tz = pendulum.timezone("Asia/Seoul")
 SERVER_API = Variable.get("SERVER_API")
 
 default_args = {
-    'owner': 'sms',
+    'owner': 'sms/v0.7.0',
     'depends_on_past': False,
-    'start_date': datetime(2023, 8, 28, tzinfo=local_tz),
+    'start_date': datetime(2022, 8, 28, tzinfo=local_tz),
     'retries': 0,
 }
 
 dag = DAG(
-    'get-kopis-api',
+    'get_KOPIS',
     default_args=default_args,
     schedule="0 1 * * 1", #매주 월요일 1AM
+    tags = ["수집","KOPIS","공연목록","공연상세정보"],
     user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
 )
 
 #DB 적재
-def load_db(execution_date,**context):
-    exe_dt=execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
+def load_db(next_execution_date,**context):
+    exe_dt=next_execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
     api_url = f"http://{SERVER_API}/kopis/performance-to-db?date={exe_dt}"
 
     response = requests.get(api_url).json()
@@ -36,8 +37,8 @@ def load_db(execution_date,**context):
     return response
 
 #정합성  체크
-def check_logic(execution_date,**context):
-    exe_dt=execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
+def check_logic(next_execution_date,**context):
+    exe_dt=next_execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
     DB_CNT=context['task_instance'].xcom_pull(task_ids='Load.Kopis_to_DB')
     api_url = f"http://{SERVER_API}/check/kopis?st_dt={exe_dt}&db_cnt={DB_CNT}"
     request = requests.get(api_url)
@@ -48,8 +49,8 @@ def check_logic(execution_date,**context):
     else:
         return "DONE"
 
-def get_detail(execution_date):
-    exe_dt=execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
+def get_detail(next_execution_date):
+    exe_dt=next_execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
     api_url = f"http://{SERVER_API}/kopis/information?date={exe_dt}"
     request = requests.get(api_url)
 

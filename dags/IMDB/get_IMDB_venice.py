@@ -10,12 +10,12 @@ KST = pendulum.timezone("Asia/Seoul")
 year_str = "{{ next_execution_date.strftime('%Y') }}"
 
 default_args ={
-    'owner' : 'v0.3.0/woorek',
+    'owner' : 'sms/v0.7.0',
     'depends_on_past' : False,
     'start_date' : datetime(1959, 10, 1, tzinfo=KST)
 }
 
-dag = DAG('IMDB_VENICE', default_args = default_args, max_active_runs = 1, tags =['수집','베니스 영화제'], schedule_interval ='@yearly')
+dag = DAG('get_IMDB_venice', default_args = default_args, max_active_runs = 1, tags =['수집','IMDB','베니스 영화제'], schedule_interval ='@yearly')
 
 def send_load_curl(event, year):
     import subprocess, sys

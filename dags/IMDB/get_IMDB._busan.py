@@ -15,13 +15,13 @@ EVENT_IDS = {'academy' : 'ev0000003',
 
 default_args = {
   'start_date': datetime(1961, 11, 1, tzinfo=local_tz),
-  'owner': 'SMS'
+  'owner': 'sms/v0.7.0'
 }
 
 dag = DAG(
-  dag_id = 'IMDB_BUSAN_DATA',
+  dag_id = 'get_IMDB_busan',
   description = 'IMDB data pipeline for Busan',
-  tags = ['IMDB','Awards','Busan'],
+  tags = ['수집','IMDB','Awards','Busan'],
   schedule_interval = '* * 1 11 *',   ### 스케줄 정의 필요 # 임시 매년 11월 1일 
   user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
   default_args=default_args

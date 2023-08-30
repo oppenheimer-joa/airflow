@@ -10,7 +10,7 @@ local_tz = pendulum.timezone('Asia/Seoul')
 
 # 프로젝트의 모든 DAG 공통 사항 기재
 default_args = {
-    "owner" : "sms",
+    "owner" : "sms/v0.7.0",
     "depends_on_past" : True,
     "retries" : 1,
     "retry_delay" : timedelta(minutes=1)
