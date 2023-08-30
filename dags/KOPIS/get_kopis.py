@@ -42,7 +42,7 @@ def check_logic(execution_date,**context):
     api_url = f"http://{SERVER_API}/check/kopis?st_dt={exe_dt}&db_cnt={DB_CNT}"
     request = requests.get(api_url)
 
-    if request == 1 :
+    if request == "1" :
         return "ERROR"
     
     else:
