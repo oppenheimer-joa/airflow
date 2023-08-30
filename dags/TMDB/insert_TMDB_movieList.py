@@ -20,7 +20,7 @@ default_args = {
 dag = DAG(
     dag_id='TMDB.insert.movieList',
     description='update MySQL databases\' movie list',
-    tags=['TMDB', 'MySQL', 'movieList'],
+    tags=['수집', 'TMDB', 'MySQL', 'movieList'],
     max_active_runs=1, 
     concurrency=1,
     start_date=datetime(year=2022, month=8, day=1, hour=0, minute=0, tzinfo=local_tz),
@@ -29,7 +29,7 @@ dag = DAG(
 )
 
 # Airflow Variables
-fastapi_host = Variable.get_val["fastapi_host"]
+SERVER_API = Variable.get_val["SERVER_API"]
 date = "{{execution_date.add(days=364, hours=9).strftime('%Y-%m-%d')}}"
 
 # start
@@ -43,7 +43,7 @@ start = EmptyOperator(
 insert = BashOperator(
     task_id="insert",
     bash_command=f'''
-    curl -X GET {fastapi_host}/mysql-movie?date={date}
+    curl -X GET http://{SERVER_API}/mysql-movie?date={date}
     ''',
     dag=dag
 )

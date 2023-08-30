@@ -8,7 +8,7 @@ import pendulum
 
 local_tz = pendulum.timezone("Asia/Seoul")
 
-SERVER_API = Variable.get("SERVER_API_blah")
+SERVER_API = Variable.get("SERVER_API")
 
 default_args = {
     'owner': 'sms/v0.7.0',
@@ -52,7 +52,7 @@ def check_logic(category, date, **context):
     ti = context['ti']
     xcom = ti.xcom_pull(task_ids='Get.TMDB_Images_Data', key='db_counts')
     print(xcom)
-    api_url_check_data = f"{SERVER_API}/check/tmdb?xcom={xcom}&category={category}&date={date}"
+    api_url_check_data = f"http://{SERVER_API}/check/tmdb?xcom={xcom}&category={category}&date={date}"
     response = requests.get(api_url_check_data)
     # 오류 처리
     response.raise_for_status()
@@ -66,7 +66,7 @@ def check_logic(category, date, **context):
 
 category = 'movieImages'
 date = "{{execution_date.add(days=364, hours=9).strftime('%Y-%m-%d')}}"
-api_url_get_data = f"{SERVER_API}/tmdb/movie-images?date={date}"
+api_url_get_data = f"http://{SERVER_API}/tmdb/movie-images?date={date}"
 
 
 start = EmptyOperator(task_id = 'Start.task', dag = dag)

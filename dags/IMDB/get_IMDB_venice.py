@@ -2,12 +2,14 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator,BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.bash import BashOperator
+from airflow.models.variable import Variable
 from datetime import datetime
 import mysql.connector, pendulum
 
 # 변수 정의
 KST = pendulum.timezone("Asia/Seoul")
 year_str = "{{ next_execution_date.strftime('%Y') }}"
+SERVER_API = Variable.get("SERVER_API")
 
 default_args ={
     'owner' : 'sms/v0.7.0',
@@ -19,7 +21,7 @@ dag = DAG('get_IMDB_venice', default_args = default_args, max_active_runs = 1, t
 
 def send_load_curl(event, year):
     import subprocess, sys
-    base_url = "192.168.90.128:4551/imdb/award"
+    base_url = f"http://{SERVER_API}/imdb/award"
     curl_url = f"{base_url}?event='{event}'&year='{year}'"
     command = f"curl '{curl_url}'"
     output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)

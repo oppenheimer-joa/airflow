@@ -8,6 +8,7 @@ import pendulum, requests, json, os
 from datetime import datetime
 
 KST = pendulum.timezone('Asia/Seoul')
+SERVER_API = Variable.get("SERVER_API")
 
 default_args = {
 	'owner': 'sms/v0.7.0',
@@ -29,14 +30,14 @@ start_task = EmptyOperator(
 load_datas = PythonOperator(
 	task_id = 'get_academy_datas',
 	python_callable = send_req,
-	op_args=['academy', '{{next_execution_date.strftime("%Y")}}','192.168.90.128:4551/imdb/award'],
+	op_args=['academy', '{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/imdb/award'],
 	dag = dag
 	)
 
 check_datas = PythonOperator(
 	task_id = 'check_academy_datas',
 	python_callable = send_req,
-	op_args =['academy','{{next_execution_date.strftime("%Y")}}','192.168.90.128:4551/check/imdb'])
+	op_args =['academy','{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/check/imdb'])
 
 end_task = EmptyOperator(
 	task_id = 'finish_academy_data_task',
