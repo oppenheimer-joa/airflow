@@ -14,10 +14,8 @@ EVENT_IDS = {'academy' : 'ev0000003',
              'busan': 'ev0004044'}
 
 default_args = {
-  'start_date': datetime(2023, 8, 28, tzinfo=local_tz),
-  'owner': 'SMS',
-  'retries': 0,
-  'retry_delay': timedelta(minutes=1)
+  'start_date': datetime(1961, 11, 1, tzinfo=local_tz),
+  'owner': 'SMS'
 }
 
 dag = DAG(
