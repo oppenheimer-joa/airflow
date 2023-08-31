@@ -7,7 +7,7 @@ from airflow.operators.bash import BashOperator
 from airflow.models.variable import Variable
 
 # Airflow Variables
-date = "{{execution_date.add(days=364, hours=9).strftime('%Y-%m-%d')}}"
+date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
 local_tz = pendulum.timezone('Asia/Seoul')
 SERVER_API = Variable.get("SERVER_API")
 
