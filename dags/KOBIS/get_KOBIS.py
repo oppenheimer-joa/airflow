@@ -75,6 +75,7 @@ def deleted_loaded_data(date):
 	import subprocess
 	base_url = f"http://{SERVER_API}/cleansing/kobis"
 	
+	# ex_cmd = http://192.168.90.128:4552/cleansing/kobis?now_date=2023-01-01
 	curl_url = f"{base_url}?now_date='{date}'"
 	command = f"curl '{curl_url}'"
 

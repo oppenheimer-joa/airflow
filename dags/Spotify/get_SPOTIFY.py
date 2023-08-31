@@ -69,7 +69,6 @@ def extract_moiveCode_data(execution_date):
 	return movieCode_list
 	
 def send_curl_requests(movieCode_list):
-	print(movieCode_list)
 	import subprocess
 	base_url = f"http://{SERVER_API}/spotify/movie-ost"
 
@@ -82,6 +81,16 @@ def send_curl_requests(movieCode_list):
 			print("Curl command output:", result.stdout)
 		except subprocess.CalledProcessError as e:
 			print("err:", e.stderr)
+
+def erase_loaded_data():
+	import subprocess
+	base_url = f"http://{SERVER_API}/cleansing/spotify"
+	try:
+		result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+		print("command output:", result.stdout)
+	except subprocess.CalledProcessError as e:
+		print("err:", e.stderr)
+
 
 start_task = EmptyOperator(
 	task_id = 'start_spotify_datas_task',
@@ -101,6 +110,11 @@ send_task = PythonOperator(
 	provide_context=True,
 	dag=dag
 )
+
+cleansing_data = PythonOperator(
+	task_id = 'delete.spotify.OST.datas',
+	python_callable=erase_loaded_data,
+	dag = dag)
 
 end_task = EmptyOperator(
 	task_id = 'finish_spotify_datas_task',

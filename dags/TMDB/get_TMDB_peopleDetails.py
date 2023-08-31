@@ -7,7 +7,10 @@ import requests
 import pendulum
 
 local_tz = pendulum.timezone("Asia/Seoul")
+
 SERVER_API = Variable.get("SERVER_API")
+category = 'peopleDetail'
+date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
 
 default_args = {
     'owner': 'sms/v0.7.0',
@@ -20,13 +23,12 @@ dag = DAG(
     dag_id='get_TMDB_peopleDetails',
     default_args=default_args,
     schedule="0 3 * * 5", ## 매주 금요일 AM 03:00 실행
-    tags = ['수집','TMDB','peopleDetails'],
-    user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
+    tags = ['수집','TMDB','peopleDetails']
 )
 
-
 # 데이터 수집 API 호출
-def get_api_data(api_url, **context):
+def get_api_data(**context):
+    api_url_get_data = f"http://{SERVER_API}/tmdb/people-details?date={date}"
     response = requests.get(api_url)
     # 오류 처리
     response.raise_for_status()
@@ -40,11 +42,9 @@ def get_api_data(api_url, **context):
     ti = context['ti']
     ti.xcom_push(key='db_counts', value=db_counts)
     
-
     return db_counts
 
-
-# # 정합성  체크
+# 정합성  체크
 def check_logic(category, date, **context):
     # XCom에서 값을 가져옵니다.
     ti = context['ti']
@@ -61,14 +61,8 @@ def check_logic(category, date, **context):
     else:
         return 'DONE'
 
-
-category = 'peopleDetail'
-date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
-api_url_get_data = f"http://{SERVER_API}/tmdb/people-details?date={date}"
-
-
 start = EmptyOperator(task_id = 'Start.task', dag = dag)
-get_data = PythonOperator(task_id = "Get.TMDB_Images_Data", python_callable=get_api_data, op_args=[api_url_get_data], dag = dag)
+get_data = PythonOperator(task_id = "Get.TMDB_Images_Data", python_callable=get_api_data, dag = dag)
 finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
 
 # start >> get_data >> finish
