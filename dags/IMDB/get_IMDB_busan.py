@@ -46,7 +46,7 @@ def check_logic(event, year) :
 
 #데이터 삭제 url 생성
 def erase_datas(event, year):
-    api_url = f"http://{SERVER_API}/blob/imdb?event={event}&year={year}"
+    api_url = f"http://{SERVER_API}/cleansing/imdb?event={event}&year={year}"
     response = requests.get(api_url).json()
     
 

@@ -41,6 +41,14 @@ def send_check_curl(event, year):
     if output == "1":
         sys.exit(1)
 
+def erase_loaded_data(event, year):
+    import subprocess, sys
+    base_url = f"http://{SERVER_API}/cleansing/imdb"
+    curl_url = f"{base_url}?event='{event}'&year='{year}'"
+    command = f"curl '{curl_url}'"
+    output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    print(output)
+
 start = EmptyOperator(
     task_id = 'start_task',
     dag = dag)
@@ -55,6 +63,13 @@ load_data = PythonOperator(
 check_data = PythonOperator(
     task_id = 'check_IMDB_venice',
     python_callable=send_check_curl,
+    op_kwargs={"event":"venice",
+               "year":year_str},
+    dag=dag)
+
+cleansing_data = PythonOperator(
+    task_id = 'delete.IMDB.venice.datas',
+    python_callable=erase_loaded_data,
     op_kwargs={"event":"venice",
                "year":year_str},
     dag=dag)
