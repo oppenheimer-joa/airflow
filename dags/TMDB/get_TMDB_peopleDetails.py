@@ -61,7 +61,20 @@ def check_logic(category, date, **context):
     else:
         return 'DONE'
 
+#target_date format yyyy-mm-dd
+def erase_loaded_data(target_date):
+    import subprocess
 
+    base_url = f"http://{SERVER_API}/cleansing/peopleDetail"
+    curl_url = f"{base_url}?target_date={target_date}"
+    command = ["curl", curl_url]
+
+    try:
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        print("Curl command output:", result.stdout)
+    except subprocess.CalledProcessError as e:
+        print("err:", e.stderr)
+        
 # 데이터 s3에 넣기
 def blob_data(date_gte, base_url):
 	import subprocess
@@ -70,24 +83,21 @@ def blob_data(date_gte, base_url):
 	subprocess.run(command)
 
 
-category = 'peopleDetail'
-date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
-api_url_get_data = f"http://{SERVER_API}/tmdb/people-details?date={date}"
-
 start = EmptyOperator(task_id = 'Start.task', dag = dag)
 get_data = PythonOperator(task_id = "Get.TMDB_Images_Data", python_callable=get_api_data, dag = dag)
-finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
 
-# start >> get_data >> finish
-
-# 정합성 체크 로직
 branching = BranchPythonOperator(task_id='Check.Integrity',python_callable=check_logic, op_args=[category, date], dag=dag)
+
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
 
-# blob 로직
 push_data = PythonOperator(task_id = "Push.TMDB_People_Detail_Data", python_callable=blob_data, op_args=[date, f'http://{SERVER_API}/blob/tmdb/peopleDetail'], dag = dag)
+cleansing_data = PythonOperator(task_id = 'delete.TMDB.People_Detail.datas',python_callable=erase_loaded_data,op_args=['{{next_execution_date.strftime("%Y-%m-%d")}}'],dag = dag)
 
+finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
+
+# 배치
 start >> get_data >> branching
-branching >> error
-branching >> done  >> finish
+branching >> [error,done]
+done >> push_data >> cleansing_data >> finish
+error 

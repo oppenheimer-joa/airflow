@@ -31,7 +31,7 @@ dag = DAG(
 # 데이터 수집 API 호출
 def get_api_data(**context):
     api_url_get_data = f"http://{SERVER_API}/tmdb/movie-images?date={date}"
-    response = requests.get(api_url)
+    response = requests.get(api_url_get_data)
     # 오류 처리
     response.raise_for_status()
     # JSON 응답 파싱
@@ -84,33 +84,20 @@ def blob_data(date_gte, base_url):
 	subprocess.run(command)
         
 
-category = 'movieImages'
-date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
-api_url_get_data = f"http://{SERVER_API}/tmdb/movie-images?date={date}"
-
-
-
 start = EmptyOperator(task_id = 'Start.task', dag = dag)
 get_data = PythonOperator(task_id = "Get.TMDB_Images_Data", python_callable=get_api_data, dag = dag)
-finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
 
-# start >> get_data >> finish
-
-# 정합성 체크 로직
 branching = BranchPythonOperator(task_id='Check.Integrity',python_callable=check_logic, op_args=[category, date], dag=dag)
 
-cleansing_data = PythonOperator(
-    task_id = 'delete.TMDB.movieImages.datas',
-    python_callable=erase_loaded_data,
-    op_args=['{{next_execution_date.strftime("%Y-%m-%d")}}'],
-    dag = dag)
+push_data = PythonOperator(task_id = "Push.TMDB_Images_Data", python_callable=blob_data, op_args=[date, f'http://{SERVER_API}/blob/tmdb/images'], dag = dag)
+cleansing_data = PythonOperator(task_id = 'delete.TMDB.movieImages.datas',python_callable=erase_loaded_data, op_args=['{{next_execution_date.strftime("%Y-%m-%d")}}'], dag = dag)
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
 
-# blob 로직
-push_data = PythonOperator(task_id = "Push.TMDB_Images_Data", python_callable=blob_data, op_args=[date, f'http://{SERVER_API}/blob/tmdb/images'], dag = dag)
+finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
+
 
 start >> get_data >> branching
 branching >> error
-branching >> done  >> finish
+branching >> done >> push_data >> cleansing_data >> finish

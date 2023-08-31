@@ -83,34 +83,20 @@ def blob_data(date_gte, base_url):
 	subprocess.run(command)
 
 
-
-category = 'movieSimilar'
-date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
-api_url_get_data = f"http://{SERVER_API}/tmdb/movie-similar?date={date}"
-
-
-
 start = EmptyOperator(task_id = 'Start.task', dag = dag)
 get_data = PythonOperator(task_id = "Get.TMDB_Similar_Data", python_callable=get_api_data, dag = dag)
-finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
 
-# start >> get_data >> finish
-
-# 정합성 체크 로직
 branching = BranchPythonOperator(task_id='Check.Integrity',python_callable=check_logic, op_args=[category, date], dag=dag)
-
-cleansing_data = PythonOperator(
-    task_id = 'delete.TMDB.movieSimilar.datas',
-    python_callable=erase_loaded_data,
-    op_args=['{{next_execution_date.strftime("%Y-%m-%d")}}'],
-    dag = dag)
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
 
-# blob 로직
 push_data = PythonOperator(task_id = "Push.TMDB_Similar_Data", python_callable=blob_data, op_args=[date, f'http://{SERVER_API}/blob/tmdb/similar'], dag = dag)
+cleansing_data = PythonOperator(task_id = 'delete.TMDB.movieSimilar.datas',python_callable=erase_loaded_data,op_args=['{{next_execution_date.strftime("%Y-%m-%d")}}'],dag = dag)
+
+finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
+
 
 start >> get_data >> branching
 branching >> error
-branching >> done  >> finish
+branching >> done >> push_data >> cleansing_data >> finish

@@ -82,6 +82,13 @@ def send_curl_requests(movieCode_list):
 		except subprocess.CalledProcessError as e:
 			print("err:", e.stderr)
 
+# Blob
+def blob_data(base_url):
+	import subprocess
+	curl_url = f"{base_url}"
+	command = ["curl", curl_url]
+	subprocess.run(command)
+	
 def erase_loaded_data():
 	import subprocess
 	base_url = f"http://{SERVER_API}/cleansing/spotify"
@@ -111,6 +118,12 @@ send_task = PythonOperator(
 	dag=dag
 )
 
+push_data = PythonOperator(
+	task_id = "Push.Spotify_Data",
+	python_callable=blob_data,
+	op_args=[f'http://{SERVER_API}/blob/spotify'],
+	dag = dag)
+
 cleansing_data = PythonOperator(
 	task_id = 'delete.spotify.OST.datas',
 	python_callable=erase_loaded_data,
@@ -120,7 +133,7 @@ end_task = EmptyOperator(
 	task_id = 'finish_spotify_datas_task',
 	dag = dag)
 
-start_task >> extract_task >> send_task >> end_task
+start_task >> extract_task >> send_task >> push_data >> cleansing_data >>  end_task
 
 
 
