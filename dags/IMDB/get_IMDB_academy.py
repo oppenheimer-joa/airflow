@@ -13,12 +13,12 @@ SERVER_API = Variable.get("SERVER_API")
 default_args = {
 	'owner': 'sms/v0.7.0',
 	'depends_on_past': True,
-	'start_date': datetime(1930,1,1, tzinfo=KST)}
+	'start_date':datetime(1930,1,1, tzinfo=KST)}
 
 dag = DAG('load_imdb_academy_API-01',
 	  default_args = default_args,
       max_active_runs= 1,
-      tags=['수집','IMDB', 'academy'] ,
+      tags=['수집','IMDB', 'academy'],
       schedule_interval= '0 11 1 5 *')   ## 매년 5월 1일 AM 11:00 실행
 
 def send_req(event, exe_year, base_url):
