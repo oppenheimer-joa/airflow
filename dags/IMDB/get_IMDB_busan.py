@@ -44,14 +44,20 @@ def check_logic(event, year) :
     
     else:
         return "DONE"
-
+      
 # Blob
 def blob_data(exe_year, base_url):
 	import subprocess
 	curl_url = f"{base_url}?event=busan&year={exe_year}"
 	command = ["curl", curl_url]
 	subprocess.run(command)
-        
+
+#데이터 삭제 url 생성
+def erase_datas(event, year):
+    api_url = f"http://{SERVER_API}/cleansing/imdb?event={event}&year={year}"
+    response = requests.get(api_url).json()
+    
+
 
 # Operator 정의
 start = EmptyOperator(task_id = 'Start.task', dag = dag)
@@ -68,6 +74,12 @@ branching = BranchPythonOperator(task_id='Check.logic',
                                  dag=dag)
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
+
+cleansing_data = PythonOperator(task_id = "delete.IMDB.busan_datas",
+                                python_callable=erase_datas,
+                                op_kwargs={"event": "busan", "year": "{{next_execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}"},
+                                dag = dag)
+
 done = EmptyOperator(task_id = 'DONE', dag = dag)
 
 # Blob
