@@ -65,7 +65,7 @@ def check_logic(category, date, **context):
 
 
 category = 'movieSimilar'
-date = "{{execution_date.add(days=364, hours=9).strftime('%Y-%m-%d')}}"
+date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
 api_url_get_data = f"http://{SERVER_API}/tmdb/movie-similar?date={date}"
 
 

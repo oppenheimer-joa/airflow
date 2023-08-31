@@ -13,7 +13,7 @@ SERVER_API = Variable.get("SERVER_API")
 default_args = {
 	'owner': 'sms/v0.7.0',
 	'depends_on_past': True,
-	'start_date':datetime(1930,1,1, tzinfo=KST)}
+	'start_date':datetime(1930, 1, 1, tzinfo=KST)}
 
 dag = DAG('load_imdb_academy_API-01',
 	  default_args = default_args,
