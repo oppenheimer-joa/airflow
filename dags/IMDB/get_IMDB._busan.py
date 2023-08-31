@@ -18,7 +18,7 @@ dag = DAG(
   dag_id = 'get_IMDB_busan',
   description = 'IMDB data pipeline for Busan',
   tags = ['수집','IMDB','Awards','Busan'],
-  schedule_interval = '* * 1 11 *',   ### 스케줄 정의 필요 # 임시 매년 11월 1일 
+  schedule_interval = '0 11 1 11 *',   ## 매년 11월 1일 AM 11:00 실행
   user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
   default_args=default_args
 )
@@ -45,7 +45,7 @@ def check_logic(event, year) :
     
 
 # Operator 정의
-start = EmptyOperator(task_id = 'Stark.task', dag = dag)
+start = EmptyOperator(task_id = 'Start.task', dag = dag)
 finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag = dag)
 
 load_tasks = PythonOperator(task_id="Save.Imdb_busan",

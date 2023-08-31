@@ -8,10 +8,6 @@ import requests
 
 local_tz = pendulum.timezone("Asia/Seoul")
 SERVER_API = Variable.get("SERVER_API")
-EVENT_IDS = {'academy' : 'ev0000003',
-             'cannes': 'ev0000147',
-             'venice' : 'ev0000681',
-             'busan': 'ev0004044'}
 
 default_args = {
   'start_date': datetime(1961, 7, 1, tzinfo=local_tz),
@@ -22,7 +18,7 @@ dag = DAG(
   dag_id = 'get_IMDB_cannes',
   description = 'IMDB data pipeline for cannes',
   tags = ['수집','IMDB','Awards','cannes'],
-  schedule_interval = '* * 1 7 *',   ### 스케줄 정의 필요 # 임시 매년 7월 1일 
+  schedule_interval = '0 11 1 7 *',   ## 매년 7월 1일 AM 11:00 실행
   user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
   default_args=default_args
 )

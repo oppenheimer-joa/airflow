@@ -21,7 +21,8 @@ dag = DAG('get_IMDB_venice',
           default_args = default_args,
           max_active_runs = 1,
           tags =['수집','IMDB','베니스 영화제'],
-          schedule_interval ='@yearly')
+          schedule_interval = '0 11 1 10 *',   ## 매년 10월 1일 AM 11:00 실행
+          )
 
 def send_load_curl(event, year):
     import subprocess, sys

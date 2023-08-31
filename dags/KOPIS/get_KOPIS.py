@@ -13,14 +13,13 @@ SERVER_API = Variable.get("SERVER_API")
 default_args = {
     'owner': 'sms/v0.7.0',
     'depends_on_past': False,
-    'start_date': datetime(2022, 8, 28, tzinfo=local_tz),
-    'retries': 0,
+    'start_date': datetime(2022, 8, 1, tzinfo=local_tz)
 }
 
 dag = DAG(
     'get_KOPIS',
     default_args=default_args,
-    schedule="0 1 * * 1", #매주 월요일 1AM
+    schedule="0 1 * * 1", ## 매주 월요일 AM 1:00 에 실행
     tags = ["수집","KOPIS","공연목록","공연상세정보"],
     user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
 )

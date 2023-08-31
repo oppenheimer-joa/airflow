@@ -17,7 +17,11 @@ default_args ={
     'start_date' : datetime(2023, 1, 1, tzinfo=KST)
 }
 
-dag = DAG('get_daily_BoxOffice', default_args = default_args, max_active_runs = 1, tags =['수집','일별 박스오피스'], schedule_interval ='0 0 * * *')
+dag = DAG('get_daily_BoxOffice',
+	  default_args = default_args,
+      max_active_runs = 1,
+      tags =['수집','일별 박스오피스'],
+      schedule_interval ='0 0 * * *')   ## 매일 00:00 에 실행
 
 def movie_location_code_from_db(**context):
 	MYSQL_HOST = Variable.get("DB_HOST")

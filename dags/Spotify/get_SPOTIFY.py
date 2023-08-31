@@ -11,9 +11,13 @@ KST = pendulum.timezone('Asia/Seoul')
 default_args ={
 	'owner': 'sms/v0.7.0',
 	'depends_on_past' : False,
-	'start_date': datetime(2023,6,10, tzinfo=KST)}
+	'start_date': datetime(2023,1,1, tzinfo=KST)}
 
-dag = DAG('get_SPOTIFY', default_args = default_args, max_active_runs= 1, tags=['수집','spotify'] , schedule_interval= '0 20 * * 5')
+dag = DAG('get_SPOTIFY',
+	  default_args = default_args,
+      max_active_runs= 1,
+      tags=['수집','spotify'] ,
+      schedule_interval= '0 2 * * 5')  ## 매주 금요일 AM 02:00 실행
 
 def gen_curl_operator(name: str, url : str, trigger_opt: str):
     #curl 싸개

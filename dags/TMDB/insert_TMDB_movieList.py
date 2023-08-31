@@ -11,9 +11,7 @@ local_tz = pendulum.timezone('Asia/Seoul')
 # 프로젝트의 모든 DAG 공통 사항 기재
 default_args = {
     "owner" : "sms/v0.7.0",
-    "depends_on_past" : True,
-    "retries" : 1,
-    "retry_delay" : timedelta(minutes=1)
+    "depends_on_past" : True
 }
 
 # 프로젝트마다 변동될 DAG 사항들 기재
@@ -23,14 +21,14 @@ dag = DAG(
     tags=['수집', 'TMDB', 'MySQL', 'movieList'],
     max_active_runs=1, 
     concurrency=1,
-    start_date=datetime(year=2022, month=8, day=1, hour=0, minute=0, tzinfo=local_tz),
-    schedule_interval='0 0 * * 5',
+    start_date=datetime(year=2023, month=8, day=25, hour=0, minute=0, tzinfo=local_tz),
+    schedule_interval='30 1 * * 5',   ## 8/25~ 매주 금요일 AM 01:30 실행
     default_args=default_args
 )
 
 # Airflow Variables
-SERVER_API = Variable.get_val["SERVER_API"]
-date = "{{execution_date.add(days=364, hours=9).strftime('%Y-%m-%d')}}"
+SERVER_API = Variable.get("SERVER_API")
+date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
 
 # start
 start = EmptyOperator(

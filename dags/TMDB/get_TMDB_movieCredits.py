@@ -13,15 +13,14 @@ SERVER_API = Variable.get("SERVER_API")
 default_args = {
     'owner': 'sms/v0.7.0',
     'depends_on_past': True,
-    'start_date': datetime(2022, 8, 1, tzinfo=local_tz),
-    'retries': 3,
+    'start_date': datetime(1999, 7, 3, tzinfo=local_tz),
     "provide_context":True,
 }
 
 dag = DAG(
     'get_TMDB_credits',
     default_args=default_args,
-    schedule="0 1 * * 5", #매주 금요일 1AM
+    schedule="0 3 * * 5", ## 990703+182일~ 매주 금요일 AM 03:00 실행
     tags = ['수집','TMDB','credits'],
     user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
 )
@@ -65,7 +64,7 @@ def check_logic(category, date, **context):
 
 
 category = 'movieCredits'
-date = "{{execution_date.add(days=364, hours=9).strftime('%Y-%m-%d')}}"
+date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
 api_url_get_data = f"http://{SERVER_API}/tmdb/movie-credits?date={date}"
 
 

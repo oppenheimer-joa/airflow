@@ -19,7 +19,7 @@ dag = DAG('get_IMDB_academy',
 	  default_args = default_args,
       max_active_runs= 1,
       tags=['수집','IMDB', 'academy'] ,
-      schedule_interval= '20 0 10 5 *')
+      schedule_interval= '0 11 1 5 *')   ## 매년 5월 1일 AM 11:00 실행
 
 def send_req(event, exe_year, base_url):
 	import subprocess
