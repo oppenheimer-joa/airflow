@@ -57,11 +57,20 @@ def get_detail(next_execution_date):
     print(f"{exe_dt}일, {len(request)}건 공연상세정보 적재 완료")
     print(request)
 
+# 데이터 s3에 넣기
+def blob_data(base_url):
+	import subprocess
+	curl_url = f"{base_url}"
+	command = ["curl", curl_url]
+	subprocess.run(command)
+  
 def erase_loaded_data(next_execution_date):
     exe_dt=next_execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
     api_url = f"http://{SERVER_API}/cleansing/kopis?date={exe_dt}"
     request = requests.get(api_url).json()
     print(request)
+
+
 
 start = EmptyOperator(task_id = 'Stark.task', dag = dag)
 finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag = dag)
@@ -84,6 +93,13 @@ cleansing_data = PythonOperator(task_id = 'delete.KOPIS.performance.datas',
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
+
+# blob 로직
+push_data = PythonOperator(task_id = "Push.Kopis_Data",
+                           python_callable=blob_data,
+                           op_args=[f'http://{SERVER_API}/blob/kopis'],
+                           dag = dag)
+
 
 
 start >> load_to_db >> save_detail >> branching

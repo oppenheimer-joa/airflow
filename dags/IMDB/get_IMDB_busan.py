@@ -1,5 +1,6 @@
 from airflow import DAG
 from datetime import datetime, timedelta
+from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.models.variable import Variable
@@ -43,12 +44,20 @@ def check_logic(event, year) :
     
     else:
         return "DONE"
+      
+# Blob
+def blob_data(exe_year, base_url):
+	import subprocess
+	curl_url = f"{base_url}?event=busan&year={exe_year}"
+	command = ["curl", curl_url]
+	subprocess.run(command)
 
 #데이터 삭제 url 생성
 def erase_datas(event, year):
     api_url = f"http://{SERVER_API}/cleansing/imdb?event={event}&year={year}"
     response = requests.get(api_url).json()
     
+
 
 # Operator 정의
 start = EmptyOperator(task_id = 'Start.task', dag = dag)
@@ -72,7 +81,14 @@ cleansing_data = PythonOperator(task_id = "delete.IMDB.busan_datas",
                                 dag = dag)
 
 done = EmptyOperator(task_id = 'DONE', dag = dag)
-    
+
+# Blob
+check_datas = PythonOperator(
+	task_id = 'blob_busan_datas',
+	python_callable = blob_data,
+	op_args =['{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/blob/imdb'],
+	dag = dag)
+
 # Operator 배치
 start >> load_tasks >> branching
 branching >> error >> finish 

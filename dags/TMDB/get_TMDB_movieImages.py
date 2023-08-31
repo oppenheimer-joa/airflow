@@ -20,9 +20,9 @@ default_args = {
 }
 
 dag = DAG(
-    'load_tmdb_image_API-01',
+    dag_id='get_TMDB_images',
     default_args=default_args,
-    schedule="0 3 * * 5", ## 990102+364일~ 매주 금요일 AM 03:00 실행
+    schedule="0 3 * * 5", ## 990703+182일~ 매주 금요일 AM 03:00 실행
     tags= ['수집','TMDB','images'],
     max_active_runs= 1
 )
@@ -71,12 +71,24 @@ def erase_loaded_data(target_date):
     base_url = f"http://{SERVER_API}/cleansing/images"
     curl_url = f"{base_url}?target_date={target_date}"
     command = ["curl", curl_url]
-
     try:
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
         print("Curl command output:", result.stdout)
     except subprocess.CalledProcessError as e:
         print("err:", e.stderr)
+
+def blob_data(date_gte, base_url):
+	import subprocess
+	curl_url = f"{base_url}?date={date_gte}"
+	command = ["curl", curl_url]
+	subprocess.run(command)
+        
+
+category = 'movieImages'
+date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
+api_url_get_data = f"http://{SERVER_API}/tmdb/movie-images?date={date}"
+
+
 
 start = EmptyOperator(task_id = 'Start.task', dag = dag)
 get_data = PythonOperator(task_id = "Get.TMDB_Images_Data", python_callable=get_api_data, dag = dag)
@@ -95,6 +107,9 @@ cleansing_data = PythonOperator(
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
+
+# blob 로직
+push_data = PythonOperator(task_id = "Push.TMDB_Images_Data", python_callable=blob_data, op_args=[date, f'http://{SERVER_API}/blob/tmdb/images'], dag = dag)
 
 start >> get_data >> branching
 branching >> error

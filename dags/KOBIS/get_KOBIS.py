@@ -71,11 +71,18 @@ def send_check_curl():
 	if output == "1":
 		sys.exit(1)
 
+# 데이터 s3에 넣기
+def blob_data(date, base_url):
+	import subprocess
+	curl_url = f"{base_url}?date={date}"
+	command = ["curl", curl_url]
+	subprocess.run(command)
+  
 def deleted_loaded_data(date):
 	import subprocess
 	base_url = f"http://{SERVER_API}/cleansing/kobis"
 	
-	# ex_cmd = http://192.168.90.128:4552/cleansing/kobis?now_date=2023-01-01
+	# ex_cmd = http://{SERVER_API}/cleansing/kobis?now_date=2023-01-01
 	curl_url = f"{base_url}?now_date='{date}'"
 	command = f"curl '{curl_url}'"
 
@@ -85,6 +92,8 @@ def deleted_loaded_data(date):
 
 	except subprocess.CalledProcessError as e:
 		print("err:", e.stderr)
+
+
 
 
 start = EmptyOperator(
@@ -112,12 +121,22 @@ check_files = PythonOperator(
 	dag=dag
 	)
 
+# blob Operator 추가
+push_data = PythonOperator(
+	task_id = "Push.Boxoffice_Data",
+    python_callable=blob_data,
+    op_args=[exe_date, f'http://{SERVER_API}/blob/boxoffice'],
+    dag = dag)
+
 cleansing_data = PythonOperator(
 	task_id = 'delete.KOBIS.boxOffice.datas',
 	python_callable = deleted_loaded_data,
 	op_kwargs={"date": exe_date},
 	dag = dag
 	)
+
+
+
 
 finish = EmptyOperator(
     task_id = 'finish',

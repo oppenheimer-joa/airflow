@@ -50,6 +50,13 @@ cleansing_data = PythonOperator(
 	python_callable= send_req,
 	op_args=['academy', '{{next_execution_date.strftime("%Y")}}', f'http://{SERVER_API}/cleansing/imdb'])
 
+# Blob
+check_datas = PythonOperator(
+	task_id = 'push_academy_datas',
+	python_callable = send_req,
+	op_args =['academy','{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/blob/imdb'],
+	dag = dag)
+
 end_task = EmptyOperator(
 	task_id = 'finish_academy_data_task',
 	dag = dag)
