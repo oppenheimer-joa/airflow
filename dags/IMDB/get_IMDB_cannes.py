@@ -16,7 +16,7 @@ default_args = {
 }
 
 dag = DAG(
-  dag_id = 'load_imdb/cannes_API-01',
+  dag_id = 'load_imdb_cannes_API-01',
   description = 'IMDB data pipeline for cannes',
   tags = ['수집','IMDB','cannes'],
   schedule_interval = '0 11 1 7 *',   ## 매년 7월 1일 AM 11:00 실행

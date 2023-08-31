@@ -17,7 +17,7 @@ default_args ={
     'start_date' : datetime(1959, 10, 1, tzinfo=KST)
 }
 
-dag = DAG('load_imdb/venice_API-01',
+dag = DAG('load_imdb_venice_API-01',
           default_args = default_args,
           max_active_runs = 1,
           tags =['수집','IMDB','venice'],

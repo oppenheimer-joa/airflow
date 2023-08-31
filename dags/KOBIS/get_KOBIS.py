@@ -17,7 +17,7 @@ default_args ={
     'start_date' : datetime(2023, 1, 1, tzinfo=KST)
 }
 
-dag = DAG('load_kobis/boxOffice_API-01',
+dag = DAG('load_kobis_boxOffice_API-01',
 	  default_args = default_args,
       max_active_runs = 1,
       tags =['수집','박스오피스', 'KOBIS'],

@@ -16,7 +16,7 @@ default_args = {
 }
 
 dag = DAG(
-  dag_id = 'load_imdb/busan_API-01',
+  dag_id = 'load_imdb_busan_API-01',
   description = 'IMDB data pipeline for Busan',
   tags = ['수집','IMDB','Busan'],
   schedule_interval = '0 11 1 11 *',   ## 매년 11월 1일 AM 11:00 실행
