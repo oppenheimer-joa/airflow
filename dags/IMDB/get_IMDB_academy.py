@@ -41,7 +41,8 @@ load_datas = PythonOperator(
 check_datas = PythonOperator(
 	task_id = 'check_academy_datas',
 	python_callable = send_req,
-	op_args =['academy','{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/check/imdb'])
+	op_args =['academy','{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/check/imdb'],
+	dag = dag)
 
 end_task = EmptyOperator(
 	task_id = 'finish_academy_data_task',
