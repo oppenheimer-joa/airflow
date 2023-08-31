@@ -71,6 +71,20 @@ def send_check_curl():
 	if output == "1":
 		sys.exit(1)
 
+def deleted_loaded_data(date):
+	import subprocess
+	base_url = f"http://{SERVER_API}/cleansing/kobis"
+	
+	curl_url = f"{base_url}?now_date='{date}'"
+	command = f"curl '{curl_url}'"
+
+	try:
+		output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+		print("Curl command output:", output.stdout)
+
+	except subprocess.CalledProcessError as e:
+		print("err:", e.stderr)
+
 
 start = EmptyOperator(
     task_id = 'start_task',
@@ -95,6 +109,13 @@ check_files = PythonOperator(
 	task_id = 'check_BoxOffice_files',
 	python_callable=send_check_curl,
 	dag=dag
+	)
+
+cleansing_data = PythonOperator(
+	task_id = 'delete.KOBIS.boxOffice.datas',
+	python_callable = deleted_loaded_data,
+	op_kwargs={"date": exe_date},
+	dag = dag
 	)
 
 finish = EmptyOperator(
