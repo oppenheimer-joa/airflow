@@ -22,6 +22,7 @@ dag = DAG(
     default_args=default_args,
     schedule="0 3 * * 5", ## 990102+364일~ 매주 금요일 AM 03:00 실행
     tags= ['수집','TMDB','images'],
+    max_active_runs= 1,
     user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
 )
 
