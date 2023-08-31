@@ -7,7 +7,6 @@ import requests
 import pendulum
 
 local_tz = pendulum.timezone("Asia/Seoul")
-
 SERVER_API = Variable.get("SERVER_API")
 
 default_args = {
@@ -18,11 +17,10 @@ default_args = {
 }
 
 dag = DAG(
-    'load_tmdb/people_API-01',
+    dag_id='get_TMDB_peopleDetails',
     default_args=default_args,
     schedule="0 3 * * 5", ## 매주 금요일 AM 03:00 실행
     tags = ['수집','TMDB','peopleDetails'],
-    max_active_runs= 1,
     user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
 )
 
@@ -65,7 +63,7 @@ def check_logic(category, date, **context):
 
 
 category = 'peopleDetail'
-date = "{{execution_date.add(days=364, hours=9).strftime('%Y-%m-%d')}}"
+date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
 api_url_get_data = f"http://{SERVER_API}/tmdb/people-details?date={date}"
 
 
