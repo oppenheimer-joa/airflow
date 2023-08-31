@@ -82,8 +82,12 @@ def blob_data(date_gte, base_url):
 	curl_url = f"{base_url}?date={date_gte}"
 	command = ["curl", curl_url]
 	subprocess.run(command)
+<<<<<<< HEAD
         
 
+=======
+  
+>>>>>>> 26fbe7cd3e14bcb3915f9f9b70251af33b198f90
 start = EmptyOperator(task_id = 'Start.task', dag = dag)
 get_data = PythonOperator(task_id = "Get.TMDB_Images_Data", python_callable=get_api_data, dag = dag)
 
