@@ -13,7 +13,7 @@ default_args ={
 	'depends_on_past' : True,
 	'start_date': datetime(2023,1,1, tzinfo=KST)}
 
-dag = DAG('load_spotify/OST_API-01',
+dag = DAG(dag_id='load_spotify_OST_API-01',
 	  default_args = default_args,
       max_active_runs= 1,
       tags=['수집','spotify','영화OST'] ,
