@@ -17,7 +17,7 @@ default_args = {
 }
 
 dag = DAG(
-    'load_KOPIS/performance_API-01',
+    'load_KOPIS_performance_API-01',
     default_args=default_args,
     schedule="0 1 * * 1", ## 매주 월요일 AM 1:00 에 실행
     tags = ["수집","KOPIS","공연상세정보"],

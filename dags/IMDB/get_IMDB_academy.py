@@ -15,7 +15,7 @@ default_args = {
 	'depends_on_past': True,
 	'start_date': datetime(1930,1,1, tzinfo=KST)}
 
-dag = DAG('load_imdb/academy_API-01',
+dag = DAG('load_imdb_academy_API-01',
 	  default_args = default_args,
       max_active_runs= 1,
       tags=['수집','IMDB', 'academy'] ,
