@@ -46,9 +46,9 @@ def check_logic(event, year) :
         return "DONE"
       
 # Blob
-def blob_data(exe_year, base_url):
+def blob_data(event, exe_year, base_url):
 	import subprocess
-	curl_url = f"{base_url}?event=busan&year={exe_year}"
+	curl_url = f"{base_url}?event={event}&year={exe_year}"
 	command = ["curl", curl_url]
 	subprocess.run(command)
 
@@ -78,7 +78,7 @@ done = EmptyOperator(task_id = 'DONE', dag = dag)
 push_data = PythonOperator(
     task_id = 'blob_busan_datas',
     python_callable = blob_data,
-    op_args =['{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/blob/imdb'],
+    op_args =['busan','{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/blob/imdb'],
     dag = dag)
 
 cleansing_data = PythonOperator(task_id = "delete.IMDB.busan_datas",

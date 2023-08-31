@@ -45,9 +45,9 @@ def check_logic(event, year):
         return "DONE"
       
 # Blob
-def send_req(exe_year, base_url):
+def send_req(event, exe_year, base_url):
 	import subprocess
-	curl_url = f"{base_url}?event=cannes&year={exe_year}"
+	curl_url = f"{base_url}?event={event}&year={exe_year}"
 	command = ["curl", curl_url]
 	subprocess.run(command)
 
@@ -76,7 +76,7 @@ done = EmptyOperator(task_id = 'DONE', dag = dag)
 push_data = PythonOperator(
 	task_id = 'blob_cannes_datas',
 	python_callable = send_req,
-	op_args =['{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/blob/imdb'],
+	op_args =['cannes','{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/blob/imdb'],
 	dag = dag)
 
 cleansing_data = PythonOperator(task_id = "delete.IMDB.cannes_datas",
