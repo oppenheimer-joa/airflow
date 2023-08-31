@@ -36,7 +36,7 @@ def load_db(next_execution_date,**context):
 
     return response
 
-#정합성  체크
+#정합성 체크
 def check_logic(next_execution_date,**context):
     exe_dt=next_execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
     DB_CNT=context['task_instance'].xcom_pull(task_ids='Load.Kopis_to_DB')
@@ -73,7 +73,6 @@ def erase_loaded_data(next_execution_date):
 
 
 start = EmptyOperator(task_id = 'Stark.task', dag = dag)
-finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag = dag)
 
 load_to_db = PythonOperator(task_id="Load.Kopis_to_DB",
                             python_callable=load_db,
@@ -87,10 +86,6 @@ branching = BranchPythonOperator(task_id='Check.logic',
                                  python_callable=check_logic,
                                  dag=dag)
 
-cleansing_data = PythonOperator(task_id = 'delete.KOPIS.performance.datas',
-                                python_callable=erase_loaded_data,
-                                dag = dag)
-
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
 
@@ -100,11 +95,13 @@ push_data = PythonOperator(task_id = "Push.Kopis_Data",
                            op_args=[f'http://{SERVER_API}/blob/kopis'],
                            dag = dag)
 
+cleansing_data = PythonOperator(task_id = 'delete.KOPIS.performance.datas',
+                                python_callable=erase_loaded_data,
+                                dag = dag)
 
+finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag = dag)
 
 start >> load_to_db >> save_detail >> branching
-branching >> error >> finish
-branching >> done  >> finish
-
-
-
+branching >> [error, done] >>
+done >> push_data >> cleansing_data >> finish
+error >> finish
