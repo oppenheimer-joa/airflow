@@ -128,6 +128,7 @@ push_data = PythonOperator(
     op_args=[exe_date, f'http://{SERVER_API}/blob/boxoffice'],
     dag = dag)
 
+# cleansing Operator 추가
 cleansing_data = PythonOperator(
 	task_id = 'delete.KOBIS.boxOffice.datas',
 	python_callable = deleted_loaded_data,
@@ -135,12 +136,10 @@ cleansing_data = PythonOperator(
 	dag = dag
 	)
 
-
-
-
 finish = EmptyOperator(
     task_id = 'finish',
     trigger_rule = 'none_failed',
     dag = dag)
 
-start >> get_movie_location_code_from_db >> load_daily_BoxOffice >> check_files >> finish
+start >> get_movie_location_code_from_db >> load_daily_BoxOffice >> check_files >> 
+push_data >> cleansing_data >> finish
