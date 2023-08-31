@@ -61,6 +61,19 @@ def check_logic(category, date, **context):
     else:
         return 'DONE'
 
+#target_date format yyyy-mm-dd
+def erase_loaded_data(target_date):
+    import subprocess
+
+    base_url = f"http://{SERVER_API}/cleansing/people"
+    curl_url = f"{base_url}?target_date={target_date}"
+    command = ["curl", curl_url]
+    try:
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        print("Curl command output:", result.stdout)
+    except subprocess.CalledProcessError as e:
+        print("err:", e.stderr)
+
 
 # 데이터 s3에 넣기
 def blob_data(date_gte, base_url):
@@ -70,13 +83,15 @@ def blob_data(date_gte, base_url):
 	subprocess.run(command)
 
 
-category = 'peopleDetail'
-date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
-api_url_get_data = f"http://{SERVER_API}/tmdb/people-details?date={date}"
-
 start = EmptyOperator(task_id = 'Start.task', dag = dag)
 get_data = PythonOperator(task_id = "Get.TMDB_Images_Data", python_callable=get_api_data, dag = dag)
 finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
+
+cleansing_data = PythonOperator(
+    task_id = 'delete.TMDB.movieSimilar.datas',
+    python_callable=erase_loaded_data,
+    op_args=['{{next_execution_date.strftime("%Y-%m-%d")}}'],
+    dag = dag)
 
 # start >> get_data >> finish
 
