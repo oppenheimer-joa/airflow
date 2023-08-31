@@ -13,10 +13,10 @@ default_args ={
 	'depends_on_past' : True,
 	'start_date': datetime(2023,1,1, tzinfo=KST)}
 
-dag = DAG('get_SPOTIFY',
+dag = DAG('load_spotify/OST_API-01',
 	  default_args = default_args,
       max_active_runs= 1,
-      tags=['수집','spotify'] ,
+      tags=['수집','spotify','영화OST'] ,
       schedule_interval= '0 2 * * 5')  ## 매주 금요일 AM 02:00 실행
 
 def gen_curl_operator(name: str, url : str, trigger_opt: str):

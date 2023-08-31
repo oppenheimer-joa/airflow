@@ -18,7 +18,7 @@ default_args = {
 }
 
 dag = DAG(
-    'get_TMDB_images',
+    'load_tmdb/image_API-01',
     default_args=default_args,
     schedule="0 3 * * 5", ## 990102+364일~ 매주 금요일 AM 03:00 실행
     tags= ['수집','TMDB','images'],

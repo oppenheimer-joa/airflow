@@ -16,9 +16,9 @@ default_args = {
 
 # 프로젝트마다 변동될 DAG 사항들 기재
 dag = DAG(
-    dag_id='TMDB.insert.movieList',
+    dag_id='mysql_tmdb/peopleID_API-01',
     description='update MySQL databases\' movie list',
-    tags=['수집', 'TMDB', 'MySQL', 'movieList'],
+    tags=['수집', 'TMDB', 'MySQL', 'peopleID'],
     max_active_runs=1, 
     concurrency=1,
     start_date=datetime(year=2022, month=8, day=1, hour=0, minute=0, tzinfo=local_tz),

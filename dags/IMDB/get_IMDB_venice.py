@@ -17,10 +17,10 @@ default_args ={
     'start_date' : datetime(1959, 10, 1, tzinfo=KST)
 }
 
-dag = DAG('get_IMDB_venice',
+dag = DAG('load_imdb/venice_API-01',
           default_args = default_args,
           max_active_runs = 1,
-          tags =['수집','IMDB','베니스 영화제'],
+          tags =['수집','IMDB','venice'],
           schedule_interval = '0 11 1 10 *',   ## 매년 10월 1일 AM 11:00 실행
           )
 
