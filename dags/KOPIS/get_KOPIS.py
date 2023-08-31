@@ -13,7 +13,7 @@ SERVER_API = Variable.get("SERVER_API")
 default_args = {
     'owner': 'sms/v0.7.0',
     'depends_on_past': True,
-    'start_date': datetime(2022, 8, 1, tzinfo=local_tz)
+    'start_date': datetime(2023, 8, 1, tzinfo=local_tz)
 }
 
 dag = DAG(
@@ -41,7 +41,7 @@ def check_logic(next_execution_date,**context):
     exe_dt=next_execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
     DB_CNT=context['task_instance'].xcom_pull(task_ids='Load.Kopis_to_DB')
     api_url = f"http://{SERVER_API}/check/kopis?st_dt={exe_dt}&db_cnt={DB_CNT}"
-    request = requests.get(api_url)
+    request = requests.get(api_url).json()
 
     if request == "1" :
         return "ERROR"
@@ -52,7 +52,7 @@ def check_logic(next_execution_date,**context):
 def get_detail(next_execution_date):
     exe_dt=next_execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
     api_url = f"http://{SERVER_API}/kopis/information?date={exe_dt}"
-    request = requests.get(api_url)
+    request = requests.get(api_url).json()
 
     print(f"{exe_dt}일, {len(request)}건 공연상세정보 적재 완료")
     print(request)

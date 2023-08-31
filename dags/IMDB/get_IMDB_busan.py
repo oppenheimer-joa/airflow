@@ -12,7 +12,7 @@ SERVER_API = Variable.get("SERVER_API")
 default_args = {
   'owner': 'sms/v0.7.0',
   'depends_on_past': True,
-  'start_date': datetime(1961, 11, 1, tzinfo=local_tz)
+  'start_date': datetime(1996, 11, 1, tzinfo=local_tz)
 }
 
 dag = DAG(
@@ -31,7 +31,6 @@ dag = DAG(
 def imdb_data_load(event, year) :
     api_url = f"http://{SERVER_API}/imdb/award?event={event}&year={year}"
     response = requests.get(api_url).json()
-
     print(response)
 
 #정합성  체크

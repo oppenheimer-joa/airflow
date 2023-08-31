@@ -18,7 +18,7 @@ default_args = {
 }
 
 dag = DAG(
-    'load_tmdb/credits_API-01',
+    'load_tmdb_credits_API-01',
     default_args=default_args,
     schedule="0 3 * * 5", ## 990703+182일~ 매주 금요일 AM 03:00 실행
     tags = ['수집','TMDB','credits'],

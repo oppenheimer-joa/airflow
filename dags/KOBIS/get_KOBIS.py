@@ -9,7 +9,7 @@ import mysql.connector, pendulum, sys
 # 변수 정의
 KST = pendulum.timezone("Asia/Seoul")
 exe_date = "{{ execution_date.strftime('%Y%m%d') }}"
-
+SERVER_API = Variable.get("SERVER_API")
 
 default_args ={
     'owner' : 'sms/v0.7.0',
@@ -49,7 +49,7 @@ def movie_location_code_from_db(**context):
 def send_load_curl(date,**context):
 	import subprocess
 	print(date)
-	base_url = "http://{SERVER_API}/kobis/daily-boxoffice"
+	base_url = f"http://{SERVER_API}/kobis/daily-boxoffice"
 	print(base_url)
 	area_code_list = context['task_instance'].xcom_pull(task_ids='get_movie_location_code')
 	for i in area_code_list:
@@ -65,7 +65,7 @@ def send_load_curl(date,**context):
 
 def send_check_curl():
 	import subprocess
-	base_url = "http://{SERVER_API}/check/boxoffice"
+	base_url = f"http://{SERVER_API}/check/boxoffice"
 	command = f"curl {base_url}"
 	output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 	if output == "1":

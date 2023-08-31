@@ -7,6 +7,7 @@ from datetime import datetime
 import pendulum, mysql.connector
 
 KST = pendulum.timezone('Asia/Seoul')
+SERVER_API = Variable.get("SERVER_API")
 
 default_args ={
 	'owner': 'sms/v0.7.0',
@@ -58,7 +59,7 @@ def extract_moiveCode_data(execution_date):
 	exe_dt = execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
 	print(exe_dt)
 	cursor = conn.cursor()
-	query = f"select * from movie_all where date_gte = '{exe_dt}'"
+	query = f"select * from movie where date_gte = '{exe_dt}'"
 	print(query)
 	cursor.execute(query)
 	raw_datas = cursor.fetchall()
@@ -70,7 +71,7 @@ def extract_moiveCode_data(execution_date):
 def send_curl_requests(movieCode_list):
 	print(movieCode_list)
 	import subprocess
-	base_url = "http://{SERVER_API}/spotify/movie-ost"
+	base_url = f"http://{SERVER_API}/spotify/movie-ost"
 
 	for code in movieCode_list:
 		curl_url = f"{base_url}?movieCode={code}"
