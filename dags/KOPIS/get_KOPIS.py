@@ -57,7 +57,11 @@ def get_detail(next_execution_date):
     print(f"{exe_dt}일, {len(request)}건 공연상세정보 적재 완료")
     print(request)
 
-
+def erase_loaded_data(next_execution_date):
+    exe_dt=next_execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
+    api_url = f"http://{SERVER_API}/cleansing/kopis?date={exe_dt}"
+    request = requests.get(api_url).json()
+    print(request)
 
 start = EmptyOperator(task_id = 'Stark.task', dag = dag)
 finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag = dag)
@@ -73,6 +77,10 @@ save_detail = PythonOperator(task_id="Save.Kopis_Detail",
 branching = BranchPythonOperator(task_id='Check.logic',
                                  python_callable=check_logic,
                                  dag=dag)
+
+cleansing_data = PythonOperator(task_id = 'delete.KOPIS.performance.datas',
+                                python_callable=erase_loaded_data,
+                                dag = dag)
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
