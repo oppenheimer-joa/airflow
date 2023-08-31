@@ -19,6 +19,7 @@ dag = DAG(
   description = 'IMDB data pipeline for Busan',
   tags = ['수집','IMDB','Awards','Busan'],
   schedule_interval = '0 11 1 11 *',   ## 매년 11월 1일 AM 11:00 실행
+  max_active_runs= 1,
   user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
   default_args=default_args
 )

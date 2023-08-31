@@ -21,6 +21,7 @@ dag = DAG(
     default_args=default_args,
     schedule="0 1 * * 1", ## 매주 월요일 AM 1:00 에 실행
     tags = ["수집","KOPIS","공연목록","공연상세정보"],
+    max_active_runs= 1,
     user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
 )
 
