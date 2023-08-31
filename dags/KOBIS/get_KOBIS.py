@@ -71,6 +71,13 @@ def send_check_curl():
 	if output == "1":
 		sys.exit(1)
 
+# 데이터 s3에 넣기
+def blob_data(date, base_url):
+	import subprocess
+	curl_url = f"{base_url}?date={date}"
+	command = ["curl", curl_url]
+	subprocess.run(command)
+	
 
 start = EmptyOperator(
     task_id = 'start_task',
@@ -96,6 +103,14 @@ check_files = PythonOperator(
 	python_callable=send_check_curl,
 	dag=dag
 	)
+
+# blob Operator 추가
+push_data = PythonOperator(
+	task_id = "Push.Boxoffice_Data",
+    python_callable=blob_data,
+    op_args=[exe_date, f'http://{SERVER_API}/blob/boxoffice'],
+    dag = dag)
+
 
 finish = EmptyOperator(
     task_id = 'finish',

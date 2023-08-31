@@ -18,11 +18,10 @@ default_args = {
 }
 
 dag = DAG(
-    'load_tmdb_image_API-01',
+    dag_id='get_TMDB_images',
     default_args=default_args,
-    schedule="0 3 * * 5", ## 990102+364일~ 매주 금요일 AM 03:00 실행
+    schedule="0 3 * * 5", ## 990703+182일~ 매주 금요일 AM 03:00 실행
     tags= ['수집','TMDB','images'],
-    max_active_runs= 1,
     user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
 )
 
@@ -64,8 +63,15 @@ def check_logic(category, date, **context):
         return 'DONE'
 
 
+def blob_data(date_gte, base_url):
+	import subprocess
+	curl_url = f"{base_url}?date={date_gte}"
+	command = ["curl", curl_url]
+	subprocess.run(command)
+        
+
 category = 'movieImages'
-date = "{{execution_date.add(days=364, hours=9).strftime('%Y-%m-%d')}}"
+date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
 api_url_get_data = f"http://{SERVER_API}/tmdb/movie-images?date={date}"
 
 
@@ -79,6 +85,9 @@ finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
 branching = BranchPythonOperator(task_id='Check.Integrity',python_callable=check_logic, op_args=[category, date], dag=dag)
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
+
+# blob 로직
+push_data = PythonOperator(task_id = "Push.TMDB_Images_Data", python_callable=blob_data, op_args=[date, f'http://{SERVER_API}/blob/tmdb/images'], dag = dag)
 
 start >> get_data >> branching
 branching >> error

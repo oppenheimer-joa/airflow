@@ -45,6 +45,13 @@ def check_logic(event, year):
     else:
         return "DONE"
     
+# Blob
+def send_req(exe_year, base_url):
+	import subprocess
+	curl_url = f"{base_url}?event=cannes&year={exe_year}"
+	command = ["curl", curl_url]
+	subprocess.run(command)
+        
 
 # Operator 정의
 start = EmptyOperator(task_id = 'Stark.task', dag = dag)
@@ -62,7 +69,14 @@ branching = BranchPythonOperator(task_id='Check.logic',
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
-    
+
+# Blob
+check_datas = PythonOperator(
+	task_id = 'blob_cannes_datas',
+	python_callable = send_req,
+	op_args =['{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/blob/imdb'],
+	dag = dag)
+
 # Operator 배치
 start >> load_tasks >> branching
 branching >> error >> finish 

@@ -62,6 +62,13 @@ def check_logic(category, date, **context):
         return 'ERROR'
     else:
         return 'DONE'
+    
+# 데이터 s3에 넣기
+def blob_data(date_gte, base_url):
+	import subprocess
+	curl_url = f"{base_url}?date={date_gte}"
+	command = ["curl", curl_url]
+	subprocess.run(command)
 
 
 category = 'movieCredits'
@@ -79,6 +86,9 @@ finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
 branching = BranchPythonOperator(task_id='Check.Integrity',python_callable=check_logic, op_args=[category, date], dag=dag)
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
+
+# blob 로직
+push_data = PythonOperator(task_id = "Push.TMDB_Credits_Data", python_callable=blob_data, op_args=[date, f'http://{SERVER_API}/blob/tmdb/credit'], dag = dag)
 
 start >> get_data >> branching
 branching >> error
