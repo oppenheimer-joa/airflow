@@ -66,7 +66,7 @@ def extract_moiveCode_data(execution_date):
 def send_curl_requests(movieCode_list):
 	print(movieCode_list)
 	import subprocess
-	base_url = "http://192.168.90.128:4551/spotify/movie-ost"
+	base_url = "http://{SERVER_API}/spotify/movie-ost"
 
 	for code in movieCode_list:
 		curl_url = f"{base_url}?movieCode={code}"

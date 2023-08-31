@@ -15,7 +15,11 @@ default_args = {
 	'depends_on_past' : False,
 	'start_date': datetime(1930,1,1, tzinfo=KST)}
 
-dag = DAG('get_IMDB_academy', default_args = default_args, max_active_runs= 1, tags=['수집','IMDB', 'academy'] , schedule_interval= '20 0 10 5 *')
+dag = DAG('get_IMDB_academy',
+	  default_args = default_args,
+      max_active_runs= 1,
+      tags=['수집','IMDB', 'academy'] ,
+      schedule_interval= '20 0 10 5 *')
 
 def send_req(event, exe_year, base_url):
 	import subprocess

@@ -39,7 +39,7 @@ start = EmptyOperator(
 )
 
 # insert
-# curl -X GET http://34.64.41.133:2233/tmdb/mysql-movie?date=2023-08-25
+# curl -X GET http://{SERVER_API}/tmdb/mysql-movie?date=2023-08-25
 insert = BashOperator(
     task_id="insert",
     bash_command=f'''

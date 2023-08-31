@@ -45,7 +45,7 @@ def movie_location_code_from_db(**context):
 def send_load_curl(date,**context):
 	import subprocess
 	print(date)
-	base_url = "192.168.90.128:4551/kobis/daily-boxoffice"
+	base_url = "http://{SERVER_API}/kobis/daily-boxoffice"
 	print(base_url)
 	area_code_list = context['task_instance'].xcom_pull(task_ids='get_movie_location_code')
 	for i in area_code_list:
@@ -61,7 +61,7 @@ def send_load_curl(date,**context):
 
 def send_check_curl():
 	import subprocess
-	base_url = "192.168.90.128:4551/check/boxoffice/"
+	base_url = "http://{SERVER_API}/check/boxoffice"
 	command = f"curl {base_url}"
 	output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 	if output == "1":

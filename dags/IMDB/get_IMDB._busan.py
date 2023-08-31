@@ -8,10 +8,6 @@ import requests
 
 local_tz = pendulum.timezone("Asia/Seoul")
 SERVER_API = Variable.get("SERVER_API")
-EVENT_IDS = {'academy' : 'ev0000003',
-             'cannes': 'ev0000147',
-             'venice' : 'ev0000681',
-             'busan': 'ev0004044'}
 
 default_args = {
   'start_date': datetime(1961, 11, 1, tzinfo=local_tz),

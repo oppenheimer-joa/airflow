@@ -17,7 +17,11 @@ default_args ={
     'start_date' : datetime(1959, 10, 1, tzinfo=KST)
 }
 
-dag = DAG('get_IMDB_venice', default_args = default_args, max_active_runs = 1, tags =['수집','IMDB','베니스 영화제'], schedule_interval ='@yearly')
+dag = DAG('get_IMDB_venice',
+          default_args = default_args,
+          max_active_runs = 1,
+          tags =['수집','IMDB','베니스 영화제'],
+          schedule_interval ='@yearly')
 
 def send_load_curl(event, year):
     import subprocess, sys
@@ -29,7 +33,7 @@ def send_load_curl(event, year):
 
 def send_check_curl(event, year):
     import subprocess, sys
-    base_url = f"192.168.90.128:4551/check/imdb/"
+    base_url = f"http://{SERVER_API}/check/imdb"
     curl_url = f"{base_url}?event='{event}'&year='{year}'"
     command = f"curl '{curl_url}'"
     output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
