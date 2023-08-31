@@ -12,7 +12,7 @@ SERVER_API = Variable.get("SERVER_API")
 
 default_args = {
 	'owner': 'sms/v0.7.0',
-	'depends_on_past' : False,
+	'depends_on_past': True,
 	'start_date': datetime(1930,1,1, tzinfo=KST)}
 
 dag = DAG('get_IMDB_academy',

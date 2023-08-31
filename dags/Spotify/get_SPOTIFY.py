@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.bash import BashOperator
 from airflow.models.variable import Variable
@@ -10,7 +10,7 @@ KST = pendulum.timezone('Asia/Seoul')
 
 default_args ={
 	'owner': 'sms/v0.7.0',
-	'depends_on_past' : False,
+	'depends_on_past' : True,
 	'start_date': datetime(2023,1,1, tzinfo=KST)}
 
 dag = DAG('get_SPOTIFY',

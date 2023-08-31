@@ -10,8 +10,9 @@ local_tz = pendulum.timezone("Asia/Seoul")
 SERVER_API = Variable.get("SERVER_API")
 
 default_args = {
-  'start_date': datetime(1961, 11, 1, tzinfo=local_tz),
-  'owner': 'sms/v0.7.0'
+  'owner': 'sms/v0.7.0',
+  'depends_on_past': True,
+  'start_date': datetime(1961, 11, 1, tzinfo=local_tz)
 }
 
 dag = DAG(
