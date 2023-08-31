@@ -44,7 +44,7 @@ def send_check_curl(event, year):
 # Blob
 def blob_data(exe_year, base_url):
 	import subprocess
-	curl_url = f"{base_url}?event=cannes&year={exe_year}"
+	curl_url = f"{base_url}?event=venice&year={exe_year}"
 	command = ["curl", curl_url]
 	subprocess.run(command)
   

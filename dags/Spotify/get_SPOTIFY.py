@@ -89,12 +89,14 @@ def blob_data(base_url):
 	command = ["curl", curl_url]
 	subprocess.run(command)
 	
-def erase_loaded_data():
+def erase_loaded_data(target_date):
 	import subprocess
 	base_url = f"http://{SERVER_API}/cleansing/spotify"
+	curl_url = f"{base_url}?target_date={target_date}"
+	command = ["curl", curl_url]
 	try:
 		result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-		print("command output:", result.stdout)
+		print("Curl command output:", result.stdout)
 	except subprocess.CalledProcessError as e:
 		print("err:", e.stderr)
 

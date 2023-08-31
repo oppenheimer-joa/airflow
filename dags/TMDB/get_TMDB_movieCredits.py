@@ -30,7 +30,7 @@ dag = DAG(
 
 # 데이터 수집 API 호출
 def get_api_data(**context):
-    api_url_get_data = f"http://{SERVER_API}/tmdb/movie-credits?date={date}"
+    api_url = f"http://{SERVER_API}/tmdb/movie-credits?date={date}"
     response = requests.get(api_url)
     # 오류 처리
     response.raise_for_status()

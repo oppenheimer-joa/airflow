@@ -90,6 +90,5 @@ finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag 
 
 # Operator 배치
 start >> load_tasks >> branching
-branching >> [error, done] >>
-error >> push_data >> cleansing_data >> finish
-done >> finish
+branching >> [error, done]
+done >> push_data >> cleansing_data >> finish

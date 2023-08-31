@@ -141,5 +141,5 @@ finish = EmptyOperator(
     trigger_rule = 'none_failed',
     dag = dag)
 
-start >> get_movie_location_code_from_db >> load_daily_BoxOffice >> check_files >> 
-push_data >> cleansing_data >> finish
+start >> get_movie_location_code_from_db >> load_daily_BoxOffice >> check_files
+check_files >> push_data >> cleansing_data >> finish

@@ -54,6 +54,7 @@ def send_req(exe_year, base_url):
 def erase_datas(event, year):
     api_url = f"http://{SERVER_API}/cleansing/imdb?event={event}&year={year}"
     response = requests.get(api_url).json()
+    print(response)
     
 
 # Operator 정의
@@ -72,8 +73,7 @@ branching = BranchPythonOperator(task_id='Check.logic',
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
 
-# Blob
-check_datas = PythonOperator(
+push_data = PythonOperator(
 	task_id = 'blob_cannes_datas',
 	python_callable = send_req,
 	op_args =['{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/blob/imdb'],
@@ -87,6 +87,5 @@ finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag 
 
 # Operator 배치
 start >> load_tasks >> branching
-branching >> [error, done] >>
-error >> push_data >> cleansing_data >> finish
-done >> finish
+branching >> [error, done]
+done >> push_data >> cleansing_data >> finish
