@@ -27,6 +27,7 @@ def send_req(event, exe_year, base_url):
 	command = ["curl", curl_url]
 	subprocess.run(command)
 
+
 start_task = EmptyOperator(
 	task_id = 'start_academy_data_task',
 	dag = dag)
@@ -43,6 +44,11 @@ check_datas = PythonOperator(
 	python_callable = send_req,
 	op_args =['academy','{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/check/imdb'],
 	dag = dag)
+
+erase_datas = PythonOperator(
+	task_id = 'delete_acadmey_datas',
+	python_callable= send_req,
+	op_args=['academy', '{{next_execution_date.strftime("%Y")}}', f'http://{SERVER_API}/blob/imdb'])
 
 end_task = EmptyOperator(
 	task_id = 'finish_academy_data_task',
