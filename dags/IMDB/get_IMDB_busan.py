@@ -61,7 +61,6 @@ def erase_datas(event, year):
 
 # Operator 정의
 start = EmptyOperator(task_id = 'Start.task', dag = dag)
-finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag = dag)
 
 load_tasks = PythonOperator(task_id="Save.Imdb_busan",
                             python_callable=imdb_data_load,
@@ -74,22 +73,23 @@ branching = BranchPythonOperator(task_id='Check.logic',
                                  dag=dag)
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
+done = EmptyOperator(task_id = 'DONE', dag = dag)
+
+push_data = PythonOperator(
+    task_id = 'blob_busan_datas',
+    python_callable = blob_data,
+    op_args =['{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/blob/imdb'],
+    dag = dag)
 
 cleansing_data = PythonOperator(task_id = "delete.IMDB.busan_datas",
                                 python_callable=erase_datas,
                                 op_kwargs={"event": "busan", "year": "{{next_execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}"},
                                 dag = dag)
 
-done = EmptyOperator(task_id = 'DONE', dag = dag)
-
-# Blob
-check_datas = PythonOperator(
-	task_id = 'blob_busan_datas',
-	python_callable = blob_data,
-	op_args =['{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/blob/imdb'],
-	dag = dag)
+finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag = dag)
 
 # Operator 배치
 start >> load_tasks >> branching
-branching >> error >> finish 
-branching >> done >> finish 
+branching >> [error, done] >>
+error >> push_data >> cleansing_data >> finish
+done >> finish

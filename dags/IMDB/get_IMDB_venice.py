@@ -92,4 +92,4 @@ push_datas = PythonOperator(
 	op_args =['{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/blob/imdb'],
 	dag = dag)
 
-start >> load_data >> check_data >> finish
+start >> load_data >> check_data >> push_datas >> cleansing_data >> finish

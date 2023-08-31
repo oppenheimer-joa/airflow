@@ -51,7 +51,7 @@ cleansing_data = PythonOperator(
 	op_args=['academy', '{{next_execution_date.strftime("%Y")}}', f'http://{SERVER_API}/cleansing/imdb'])
 
 # Blob
-check_datas = PythonOperator(
+push_data = PythonOperator(
 	task_id = 'push_academy_datas',
 	python_callable = send_req,
 	op_args =['academy','{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/blob/imdb'],
@@ -61,4 +61,4 @@ end_task = EmptyOperator(
 	task_id = 'finish_academy_data_task',
 	dag = dag)
 
-start_task >> load_datas >> check_datas >> end_task
+start_task >> load_datas >> check_datas >> push_data >> cleansing_data >> end_task
