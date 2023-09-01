@@ -10,7 +10,6 @@ local_tz = pendulum.timezone("Asia/Seoul")
 
 SERVER_API = Variable.get("SERVER_API")
 category = 'movieSimilar'
-date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
 
 default_args = {
     'owner': 'sms/v0.7.0',
@@ -29,7 +28,7 @@ dag = DAG(
 
 
 # 데이터 수집 API 호출
-def get_api_data(**context):
+def get_api_data(date, **context):
     api_url = f"http://{SERVER_API}/tmdb/movie-similar?date={date}"
     response = requests.get(api_url)
     # 오류 처리
@@ -62,13 +61,20 @@ def check_logic(category, date, **context):
         return 'ERROR'
     else:
         return 'DONE'
+    
+def blob_data(category, date_gte, base_url):
+    import subprocess
+    curl_url = f"{base_url}?category={category}&date={date_gte}"
+    print(curl_url, date_gte)
+    command = ["curl", curl_url]
+    subprocess.run(command)
 
 #target_date format yyyy-mm-dd
-def erase_loaded_data(target_date):
+def erase_loaded_data(category, target_date):
     import subprocess
 
-    base_url = f"http://{SERVER_API}/cleansing/similar"
-    curl_url = f"{base_url}?target_date={target_date}"
+    base_url = f"http://{SERVER_API}/cleansing/tmdb"
+    curl_url = f"{base_url}?category={category}&date={target_date}"
     command = ["curl", curl_url]
     try:
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
@@ -76,23 +82,17 @@ def erase_loaded_data(target_date):
     except subprocess.CalledProcessError as e:
         print("err:", e.stderr)
 
-def blob_data(date_gte, base_url):
-	import subprocess
-	curl_url = f"{base_url}?date={date_gte}"
-	command = ["curl", curl_url]
-	subprocess.run(command)
-
 
 start = EmptyOperator(task_id = 'Start.task', dag = dag)
-get_data = PythonOperator(task_id = "Get.TMDB_Similar_Data", python_callable=get_api_data, dag = dag)
+get_data = PythonOperator(task_id = "Get.TMDB_Similar_Data", python_callable=get_api_data, op_args=["{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], provide_context=True, dag = dag)
 
-branching = BranchPythonOperator(task_id='Check.Integrity',python_callable=check_logic, op_args=[category, date], dag=dag)
+branching = BranchPythonOperator(task_id='Check.Integrity',python_callable=check_logic, op_args=[category,"{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], dag=dag)
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
 
-push_data = PythonOperator(task_id = "Push.TMDB_Similar_Data", python_callable=blob_data, op_args=[date, f'http://{SERVER_API}/blob/tmdb/similar'], dag = dag)
-cleansing_data = PythonOperator(task_id = 'delete.TMDB.movieSimilar.datas',python_callable=erase_loaded_data,op_args=['{{next_execution_date.strftime("%Y-%m-%d")}}'],dag = dag)
+push_data = PythonOperator(task_id = "Push.TMDB_Similar_Data", python_callable=blob_data, op_args=[category, "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}", f'http://{SERVER_API}/blob/tmdb'], provide_context=True, dag = dag)
+cleansing_data = PythonOperator(task_id = 'delete.TMDB.movieSimilar.datas',python_callable=erase_loaded_data,op_args=[category, "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], provide_context=True, dag = dag)
 
 finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
 
