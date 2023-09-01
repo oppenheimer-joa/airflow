@@ -24,8 +24,8 @@ dag = DAG(
     tags=['수집', 'TMDB', 'MySQL', 'peopleID'],
     max_active_runs=1, 
     concurrency=1,
-    start_date=datetime(year=2022, month=8, day=1, hour=0, minute=0, tzinfo=local_tz),
-    schedule_interval='0 0 * * 5',
+    start_date=datetime(year=2023, month=8, day=25, hour=0, minute=0, tzinfo=local_tz),
+    schedule_interval='0 0 * * 5',  ## 8/25~ 매주 금요일 실행
     default_args=default_args
 )
 

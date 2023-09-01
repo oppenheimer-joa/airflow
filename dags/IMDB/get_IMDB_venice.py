@@ -41,9 +41,9 @@ def send_check_curl(event, year):
     if output == "1":
         sys.exit(1)
 
-def blob_data(event, exe_year, base_url):
+def blob_data(event, exe_year):
 	import subprocess
-	curl_url = f"{base_url}?event={event}&year={exe_year}"
+	curl_url = f"http://{SERVER_API}/blob/imdb?event={event}&year={exe_year}"
 	command = ["curl", curl_url]
 	subprocess.run(command)
   
@@ -74,9 +74,10 @@ check_data = PythonOperator(
     dag=dag)
 
 push_datas = PythonOperator(
-	task_id = 'blob_venice_datas',
+	task_id = 'blob_IMDB_venice',
 	python_callable = blob_data,
-	op_args =['venice','{{next_execution_date.strftime("%Y")}}',f'http://{SERVER_API}/blob/imdb'],
+	op_kwargs={"event":"venice",
+               "year":year_str},
 	dag = dag)
 
 cleansing_data = PythonOperator(

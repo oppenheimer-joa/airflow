@@ -22,7 +22,7 @@ default_args = {
 dag = DAG(
     dag_id='get_TMDB_images',
     default_args=default_args,
-    schedule="0 3 * * 5", ## 990703+182일~ 매주 금요일 AM 03:00 실행
+    schedule="0 3 * * 5", ## 990703~ 매주 금요일 AM 03:00 실행
     tags= ['수집','TMDB','images'],
     max_active_runs= 1
 )

@@ -14,7 +14,7 @@ SERVER_API = Variable.get("SERVER_API")
 default_args ={
     'owner' : 'sms/v0.7.0',
     'depends_on_past' : True,
-    'start_date' : datetime(2023, 1, 1, tzinfo=KST)
+    'start_date' : datetime(2023, 8, 1, tzinfo=KST)
 }
 
 dag = DAG('load_kobis_boxOffice_API-01',
