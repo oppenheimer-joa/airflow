@@ -41,9 +41,9 @@ def send_check_curl(event, year):
     if output == "1":
         sys.exit(1)
 
-def blob_data(event, exe_year):
+def blob_data(event, year):
 	import subprocess
-	curl_url = f"http://{SERVER_API}/blob/imdb?event={event}&year={exe_year}"
+	curl_url = f"http://{SERVER_API}/blob/imdb?event={event}&year={year}"
 	command = ["curl", curl_url]
 	subprocess.run(command)
   
