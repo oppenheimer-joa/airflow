@@ -76,7 +76,7 @@ error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
 
 push_data = PythonOperator(task_id = 'blob_busan_datas',
-                           ython_callable = blob_data,
+                           python_callable = blob_data,
                            op_kwargs={"event": "busan", "year": "{{next_execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}"},
                            dag = dag)
 
