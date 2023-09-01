@@ -80,7 +80,7 @@ def blob_data(date, base_url):
   
 def deleted_loaded_data(date):
 	import subprocess
-	base_url = f"http://{SERVER_API}/cleansing/kobis"
+	base_url = f"http://{SERVER_API}/cleansing/boxoffice"
 	
 	# ex_cmd = http://{SERVER_API}/cleansing/kobis?now_date=2023-01-01
 	curl_url = f"{base_url}?now_date='{date}'"
@@ -143,3 +143,4 @@ finish = EmptyOperator(
 
 start >> get_movie_location_code_from_db >> load_daily_BoxOffice >> check_files
 check_files >> push_data >> cleansing_data >> finish
+

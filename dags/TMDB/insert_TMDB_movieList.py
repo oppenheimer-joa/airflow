@@ -21,7 +21,7 @@ dag = DAG(
     tags=['수집', 'TMDB', 'MySQL', 'movieID'],
     max_active_runs=1, 
     concurrency=1,
-    start_date=datetime(year=2023, month=8, day=25, hour=0, minute=0, tzinfo=local_tz),
+    start_date=datetime(year=2024, month=2, day=23, hour=0, minute=0, tzinfo=local_tz),
     schedule_interval='30 1 * * 5',   ## 8/25~ 매주 금요일 AM 01:30 실행
     default_args=default_args
 )

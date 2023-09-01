@@ -3,11 +3,13 @@ from airflow.operators.python import PythonOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.bash import BashOperator
 from airflow.models.variable import Variable
-from datetime import datetime
+from datetime import datetime,timedelta
 import pendulum, mysql.connector
 
 KST = pendulum.timezone('Asia/Seoul')
 SERVER_API = Variable.get("SERVER_API")
+
+base_year = "{{ execution_date.strftime('%Y-%m-%d') }}"
 
 default_args ={
 	'owner': 'sms/v0.7.0',
@@ -38,7 +40,7 @@ def gen_curl_operator(name: str, url : str, trigger_opt: str):
 
     return bash_task
 
-def extract_moiveCode_data(execution_date):
+def extract_moiveCode_data(base_date):
 
 	DB_HOST = Variable.get("DB_HOST")
 	DB_USER = Variable.get("DB_USER")
@@ -46,6 +48,7 @@ def extract_moiveCode_data(execution_date):
 	DB_PWD = Variable.get("DB_PWD")
 	DB_DB = Variable.get("DB_DB")
 
+	target_date = (datetime.strptime(base_date,"%Y-%m-%d") - timedelta(days=6)).strftime("%Y-%m-%d")
 
 	movieCode_list = []
 
@@ -56,10 +59,8 @@ def extract_moiveCode_data(execution_date):
 		password=DB_PWD,
 		database=DB_DB
 	)
-	exe_dt = execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
-	print(exe_dt)
 	cursor = conn.cursor()
-	query = f"select * from movie where date_gte = '{exe_dt}'"
+	query = f"select * from movie where date_gte = '{target_date}'"
 	print(query)
 	cursor.execute(query)
 	raw_datas = cursor.fetchall()
@@ -83,16 +84,19 @@ def send_curl_requests(movieCode_list):
 			print("err:", e.stderr)
 
 # Blob
-def blob_data(base_url):
+def blob_data(base_url, base_date):
 	import subprocess
-	curl_url = f"{base_url}"
+
+	target_date = (datetime.strptime(base_date,"%Y-%m-%d") - timedelta(days=6)).strftime("%Y")
+
+	curl_url = f"{base_url}?year={target_date}"
+	print(curl_url)
 	command = ["curl", curl_url]
 	subprocess.run(command)
 	
-def erase_loaded_data(target_date):
+def erase_loaded_data():
 	import subprocess
-	base_url = f"http://{SERVER_API}/cleansing/spotify"
-	curl_url = f"{base_url}?target_date={target_date}"
+	curl_url = f"http://{SERVER_API}/cleansing/spotify"
 	command = ["curl", curl_url]
 	try:
 		result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
@@ -108,6 +112,7 @@ start_task = EmptyOperator(
 extract_task = PythonOperator(
 	task_id='extract_movie_codes',
 	python_callable=extract_moiveCode_data,
+	op_args=[base_year],
 	provide_context=True,
 	dag=dag
 )
@@ -123,7 +128,7 @@ send_task = PythonOperator(
 push_data = PythonOperator(
 	task_id = "Push.Spotify_Data",
 	python_callable=blob_data,
-	op_args=[f'http://{SERVER_API}/blob/spotify'],
+	op_args=[f'http://{SERVER_API}/blob/spotify',base_year],
 	dag = dag)
 
 cleansing_data = PythonOperator(
