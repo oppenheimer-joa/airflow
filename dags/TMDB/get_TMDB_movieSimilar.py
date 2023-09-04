@@ -14,7 +14,7 @@ category = 'movieSimilar'
 default_args = {
     'owner': 'sms/v0.7.0',
     'depends_on_past': True,
-    'start_date': datetime(1999, 7, 3, tzinfo=local_tz),
+    'start_date': datetime(2022, 12, 25, tzinfo=local_tz),
     "provide_context":True,
 }
 
@@ -84,15 +84,15 @@ def erase_loaded_data(category, target_date):
 
 
 start = EmptyOperator(task_id = 'Start.task', dag = dag)
-get_data = PythonOperator(task_id = "Get.TMDB_Similar_Data", python_callable=get_api_data, op_args=["{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], provide_context=True, dag = dag)
+get_data = PythonOperator(task_id = "Get.TMDB_Similar_Data", python_callable=get_api_data, op_args=["{{execution_date.add(days=7, hours=9).strftime('%Y-%m-%d')}}"], provide_context=True, dag = dag)
 
-branching = BranchPythonOperator(task_id='Check.Integrity',python_callable=check_logic, op_args=[category,"{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], dag=dag)
+branching = BranchPythonOperator(task_id='Check.Integrity',python_callable=check_logic, op_args=[category,"{{execution_date.add(days=7, hours=9).strftime('%Y-%m-%d')}}"], dag=dag)
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
 
-push_data = PythonOperator(task_id = "Push.TMDB_Similar_Data", python_callable=blob_data, op_args=[category, "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}", f'http://{SERVER_API}/blob/tmdb'], provide_context=True, dag = dag)
-cleansing_data = PythonOperator(task_id = 'delete.TMDB.movieSimilar.datas',python_callable=erase_loaded_data,op_args=[category, "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], provide_context=True, dag = dag)
+push_data = PythonOperator(task_id = "Push.TMDB_Similar_Data", python_callable=blob_data, op_args=[category, "{{execution_date.add(days=7, hours=9).strftime('%Y-%m-%d')}}", f'http://{SERVER_API}/blob/tmdb'], provide_context=True, dag = dag)
+cleansing_data = PythonOperator(task_id = 'delete.TMDB.movieSimilar.datas',python_callable=erase_loaded_data,op_args=[category, "{{execution_date.add(days=7, hours=9).strftime('%Y-%m-%d')}}"], provide_context=True, dag = dag)
 
 finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
 
