@@ -9,9 +9,10 @@ import requests
 
 local_tz = pendulum.timezone("Asia/Seoul")
 SERVER_API = Variable.get("SERVER_API")
+DAGS_OWNER = Variable.get('DAGS_OWNER')
 
 default_args = {
-  'owner': 'sms/v0.7.0',
+  'owner': DAGS_OWNER,
   'depends_on_past': True,
   'start_date': datetime(1996, 11, 1, tzinfo=local_tz)
 }
@@ -60,14 +61,14 @@ def erase_datas(event, year):
 
 
 # Operator 정의
-start = EmptyOperator(task_id = 'Start.task', dag = dag)
+start = EmptyOperator(task_id = 'start_busan_data_task', dag = dag)
 
-load_tasks = PythonOperator(task_id="Save.Imdb_busan",
+load_tasks = PythonOperator(task_id="get_busan_datas",
                             python_callable=imdb_data_load,
                             op_kwargs={"event": "busan", "year": "{{next_execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}" },
                             dag=dag)
 
-branching = BranchPythonOperator(task_id='Check.logic',
+branching = BranchPythonOperator(task_id='check_busan_datas',
                                  python_callable=check_logic,
                                  op_kwargs={"event": "busan", "year": "{{next_execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}" },
                                  dag=dag)
@@ -80,12 +81,12 @@ push_data = PythonOperator(task_id = 'blob_busan_datas',
                            op_kwargs={"event": "busan", "year": "{{next_execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}"},
                            dag = dag)
 
-cleansing_data = PythonOperator(task_id = "delete.IMDB.busan_datas",
+cleansing_data = PythonOperator(task_id = "delete_busan_datas",
                                 python_callable=erase_datas,
                                 op_kwargs={"event": "busan", "year": "{{next_execution_date.in_timezone('Asia/Seoul').strftime('%Y')}}"},
                                 dag = dag)
 
-finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag = dag)
+finish = EmptyOperator(task_id = 'finish_busan_data_task', trigger_rule='one_success', dag = dag)
 
 # Operator 배치
 start >> load_tasks >> branching

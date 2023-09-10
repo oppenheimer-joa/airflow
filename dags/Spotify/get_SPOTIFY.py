@@ -8,11 +8,12 @@ import pendulum, mysql.connector
 
 KST = pendulum.timezone('Asia/Seoul')
 SERVER_API = Variable.get("SERVER_API")
+DAGS_OWNER = Variable.get('DAGS_OWNER')
 
 base_year = "{{ execution_date.strftime('%Y-%m-%d') }}"
 
 default_args ={
-	'owner': 'sms/v0.7.0',
+	'owner': DAGS_OWNER,
 	'depends_on_past' : True,
 	'start_date': datetime(2023,1,1, tzinfo=KST)}
 
@@ -106,7 +107,7 @@ def erase_loaded_data():
 
 
 start_task = EmptyOperator(
-	task_id = 'start_spotify_datas_task',
+	task_id = 'start_spotify_data_task',
 	dag = dag)
 
 extract_task = PythonOperator(
@@ -126,18 +127,18 @@ send_task = PythonOperator(
 )
 
 push_data = PythonOperator(
-	task_id = "Push.Spotify_Data",
+	task_id = "push_spotify_datas",
 	python_callable=blob_data,
 	op_args=[f'http://{SERVER_API}/blob/spotify',base_year],
 	dag = dag)
 
 cleansing_data = PythonOperator(
-	task_id = 'delete.spotify.OST.datas',
+	task_id = 'delete_spotify_datas',
 	python_callable=erase_loaded_data,
 	dag = dag)
 
 end_task = EmptyOperator(
-	task_id = 'finish_spotify_datas_task',
+	task_id = 'finish_spotify_data_task',
 	dag = dag)
 
 start_task >> extract_task >> send_task >> push_data >> cleansing_data >>  end_task

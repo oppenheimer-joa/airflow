@@ -10,9 +10,10 @@ import mysql.connector, pendulum, sys
 KST = pendulum.timezone("Asia/Seoul")
 exe_date = "{{ execution_date.strftime('%Y%m%d') }}"
 SERVER_API = Variable.get("SERVER_API")
+DAGS_OWNER = Variable.get('DAGS_OWNER')
 
 default_args ={
-    'owner' : 'sms/v0.7.0',
+    'owner' : DAGS_OWNER,
     'depends_on_past' : True,
     'start_date' : datetime(2023, 8, 1, tzinfo=KST)
 }
@@ -97,7 +98,7 @@ def deleted_loaded_data(date):
 
 
 start = EmptyOperator(
-    task_id = 'start_task',
+    task_id = 'start_kobis_data_task',
     dag = dag)
 
 get_movie_location_code_from_db = PythonOperator(
@@ -108,7 +109,7 @@ get_movie_location_code_from_db = PythonOperator(
 	)
 
 load_daily_BoxOffice = PythonOperator(
-	task_id = 'load_daily_BoxOffice',
+	task_id = 'load_daily_boxoffice',
 	python_callable=send_load_curl,
 	op_kwargs={"date": exe_date},
 	# provide_context=True,
@@ -116,28 +117,28 @@ load_daily_BoxOffice = PythonOperator(
 	)
 
 check_files = PythonOperator(
-	task_id = 'check_BoxOffice_files',
+	task_id = 'check_boxoffice_files',
 	python_callable=send_check_curl,
 	dag=dag
 	)
 
 # blob Operator 추가
 push_data = PythonOperator(
-	task_id = "Push.Boxoffice_Data",
+	task_id = "push_boxoffice_data",
     python_callable=blob_data,
     op_args=[exe_date, f'http://{SERVER_API}/blob/boxoffice'],
     dag = dag)
 
 # cleansing Operator 추가
 cleansing_data = PythonOperator(
-	task_id = 'delete.KOBIS.boxOffice.datas',
+	task_id = 'delete_boxoffice_datas',
 	python_callable = deleted_loaded_data,
 	op_kwargs={"date": exe_date},
 	dag = dag
 	)
 
 finish = EmptyOperator(
-    task_id = 'finish',
+    task_id = 'finish_kobis_data_task',
     trigger_rule = 'none_failed',
     dag = dag)
 

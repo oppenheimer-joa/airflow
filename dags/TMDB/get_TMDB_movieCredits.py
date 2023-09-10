@@ -7,12 +7,12 @@ import requests
 import pendulum
 
 local_tz = pendulum.timezone("Asia/Seoul")
-
+DAGS_OWNER = Variable.get('DAGS_OWNER')
 SERVER_API = Variable.get("SERVER_API")
 category = 'movieCredits'
 
 default_args = {
-    'owner': 'sms/v0.7.0',
+    'owner': DAGS_OWNER,
     'depends_on_past': True,
     'start_date': datetime(1999, 7, 3, tzinfo=local_tz),
     "provide_context":True,
@@ -50,7 +50,7 @@ def get_api_data(date, **context):
 def check_logic(category, date, **context):
     # XCom에서 값을 가져옵니다.
     ti = context['ti']
-    xcom = ti.xcom_pull(task_ids='Get.TMDB_Credits_Data', key='db_counts')
+    xcom = ti.xcom_pull(task_ids='get_TMDB.Credits_datas', key='db_counts')
     print(xcom)
     api_url_check_data = f"http://{SERVER_API}/check/tmdb?xcom={xcom}&category={category}&date={date}"
     response = requests.get(api_url_check_data)
@@ -87,22 +87,22 @@ def erase_loaded_data(target_date):
     except subprocess.CalledProcessError as e:
         print("err:", e.stderr)
 
-start = EmptyOperator(task_id = 'Start.task', dag = dag)
-get_data = PythonOperator(task_id = "Get.TMDB_Credits_Data", python_callable=get_api_data, op_args=["{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], dag = dag)
+start = EmptyOperator(task_id = 'start_TMDB.Credits_task', dag = dag)
+get_data = PythonOperator(task_id = "get_TMDB.Credits_datas", python_callable=get_api_data, op_args=["{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], dag = dag)
 
-branching = BranchPythonOperator(task_id='Check.Integrity',python_callable=check_logic, op_args=[category,"{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], dag=dag)
+branching = BranchPythonOperator(task_id='check_integrity',python_callable=check_logic, op_args=[category,"{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], dag=dag)
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
 
-push_data = PythonOperator(task_id = "Push.TMDB_Credits_Data", python_callable=blob_data, op_args=["{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}", f'http://{SERVER_API}/blob/tmdb'], dag = dag)
+push_data = PythonOperator(task_id = "push_TMDB.Credits_datas", python_callable=blob_data, op_args=["{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}", f'http://{SERVER_API}/blob/tmdb'], dag = dag)
 cleansing_data = PythonOperator(
-    task_id = 'delete.TMDB.movieCredits.datas',
+    task_id = 'delete_TMDB.Credits_datas',
     python_callable=erase_loaded_data,
     op_args=["{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"],
     dag = dag)
 
-finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
+finish = EmptyOperator(task_id = 'finish_TMDB.Credits_task', dag = dag)
 
 # 배치
 start >> get_data >> branching

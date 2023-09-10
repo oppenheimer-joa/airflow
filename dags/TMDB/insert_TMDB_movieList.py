@@ -7,10 +7,10 @@ from airflow.operators.bash import BashOperator
 from airflow.models.variable import Variable
 
 local_tz = pendulum.timezone('Asia/Seoul')
-
+DAGS_OWNER = Variable.get('DAGS_OWNER')
 # 프로젝트의 모든 DAG 공통 사항 기재
 default_args = {
-    "owner" : "sms/v0.7.0",
+    "owner" : DAGS_OWNER,
     "depends_on_past" : True
 }
 
@@ -32,14 +32,14 @@ date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
 
 # start
 start = EmptyOperator(
-    task_id="start",
+    task_id="start_TMDB.movieList_task",
     dag=dag
 )
 
 # insert
 # curl -X GET http://{SERVER_API}/tmdb/mysql-movie?date=2023-08-25
 insert = BashOperator(
-    task_id="insert",
+    task_id="insert_TMDB.movieList_datas",
     bash_command=f'''
     curl -X GET http://{SERVER_API}/mysql-movie?date={date}
     ''',
@@ -48,7 +48,7 @@ insert = BashOperator(
 
 # end
 end = EmptyOperator(
-    task_id="end",
+    task_id="finish_TMDB.movieList_task",
     dag=dag
 )
 

@@ -7,13 +7,13 @@ import requests
 import pendulum
 
 local_tz = pendulum.timezone("Asia/Seoul")
-
+DAGS_OWNER = Variable.get('DAGS_OWNER')
 SERVER_API = Variable.get("SERVER_API")
 category = 'peopleDetail'
 date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
 
 default_args = {
-    'owner': 'sms/v0.7.0',
+    'owner': DAGS_OWNER,
     'depends_on_past': True,
     'start_date': datetime(1959, 1, 2, tzinfo=local_tz),
     "provide_context":True,
@@ -48,7 +48,7 @@ def get_api_data(**context):
 def check_logic(category, date, **context):
     # XCom에서 값을 가져옵니다.
     ti = context['ti']
-    xcom = ti.xcom_pull(task_ids='Get.TMDB_People_Data', key='db_counts')
+    xcom = ti.xcom_pull(task_ids='get_TMDB.peopleDetails_datas', key='db_counts')
     print(xcom)
     api_url_check_data = f"http://{SERVER_API}/check/tmdb?xcom={xcom}&category={category}&date={date}"
     response = requests.get(api_url_check_data)
@@ -82,18 +82,18 @@ def blob_data(date_gte, base_url):
 	subprocess.run(command)
 
 
-start = EmptyOperator(task_id = 'Start.task', dag = dag)
-get_data = PythonOperator(task_id = "Get.TMDB_Images_Data", python_callable=get_api_data, dag = dag)
+start = EmptyOperator(task_id = 'start_TMDB.peopleDetails_task', dag = dag)
+get_data = PythonOperator(task_id = "get_TMDB.peopleDetails_datas", python_callable=get_api_data, dag = dag)
 
-branching = BranchPythonOperator(task_id='Check.Integrity',python_callable=check_logic, op_args=[category, date], dag=dag)
+branching = BranchPythonOperator(task_id='check_integrity',python_callable=check_logic, op_args=[category, date], dag=dag)
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
 
-push_data = PythonOperator(task_id = "Push.TMDB_People_Detail_Data", python_callable=blob_data, op_args=[date, f'http://{SERVER_API}/blob/tmdb/peopleDetail'], dag = dag)
-cleansing_data = PythonOperator(task_id = 'delete.TMDB.People_Detail.datas',python_callable=erase_loaded_data,op_args=['{{next_execution_date.strftime("%Y-%m-%d")}}'],dag = dag)
+push_data = PythonOperator(task_id = "push_TMDB.peopleDetail_datas", python_callable=blob_data, op_args=[date, f'http://{SERVER_API}/blob/tmdb/peopleDetail'], dag = dag)
+cleansing_data = PythonOperator(task_id = 'delete_TMDB.peopleDetail_datas',python_callable=erase_loaded_data,op_args=['{{next_execution_date.strftime("%Y-%m-%d")}}'],dag = dag)
 
-finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
+finish = EmptyOperator(task_id = 'finish_TMDB.peopleDetails_task', dag = dag)
 
 # 배치
 start >> get_data >> branching

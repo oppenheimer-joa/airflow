@@ -10,10 +10,11 @@ from airflow.models.variable import Variable
 date = "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"
 local_tz = pendulum.timezone('Asia/Seoul')
 SERVER_API = Variable.get("SERVER_API")
+DAGS_OWNER = Variable.get('DAGS_OWNER')
 
 # 프로젝트의 모든 DAG 공통 사항 기재
 default_args = {
-    "owner" : "sms",
+    "owner" : DAGS_OWNER,
     "depends_on_past" : True
 }
 
@@ -33,14 +34,14 @@ dag = DAG(
 
 # start
 start = EmptyOperator(
-    task_id="start",
+    task_id="start_TMDB.peopleList_task",
     dag=dag
 )
 
 # insert
 # curl -X GET http://{SERVER_API}/tmdb/mysql-people?date=2023-08-25
 insert = BashOperator(
-    task_id="insert",
+    task_id="insert_TMDB.peopleList_datas",
     bash_command=f'''
     curl -X GET http://{SERVER_API}/mysql-people?date={date}
     ''',
@@ -49,7 +50,7 @@ insert = BashOperator(
 
 # end
 end = EmptyOperator(
-    task_id="end",
+    task_id="finish_TMDB.peopleList_task",
     dag=dag
 )
 
