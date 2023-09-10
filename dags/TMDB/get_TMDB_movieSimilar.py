@@ -7,12 +7,12 @@ import requests
 import pendulum
 
 local_tz = pendulum.timezone("Asia/Seoul")
-
+DAGS_OWNER = Variable.get('DAGS_OWNER')
 SERVER_API = Variable.get("SERVER_API")
 category = 'movieSimilar'
 
 default_args = {
-    'owner': 'sms/v0.7.0',
+    'owner': DAGS_OWNER,
     'depends_on_past': True,
     'start_date': datetime(1999, 7, 3, tzinfo=local_tz),
     "provide_context":True,
@@ -49,7 +49,7 @@ def get_api_data(date, **context):
 def check_logic(category, date, **context):
     # XCom에서 값을 가져옵니다.
     ti = context['ti']
-    xcom = ti.xcom_pull(task_ids='Get.TMDB_Similar_Data', key='db_counts')
+    xcom = ti.xcom_pull(task_ids='get_TMDB.Similar_data', key='db_counts')
     print(xcom)
     api_url_check_data = f"http://{SERVER_API}/check/tmdb?xcom={xcom}&category={category}&date={date}"
     response = requests.get(api_url_check_data)
@@ -83,18 +83,18 @@ def erase_loaded_data(category, target_date):
         print("err:", e.stderr)
 
 
-start = EmptyOperator(task_id = 'Start.task', dag = dag)
-get_data = PythonOperator(task_id = "Get.TMDB_Similar_Data", python_callable=get_api_data, op_args=["{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], provide_context=True, dag = dag)
+start = EmptyOperator(task_id = 'start_TMDB.Similar_task', dag = dag)
+get_data = PythonOperator(task_id = "get_TMDB.Similar_data", python_callable=get_api_data, op_args=["{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], provide_context=True, dag = dag)
 
-branching = BranchPythonOperator(task_id='Check.Integrity',python_callable=check_logic, op_args=[category,"{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], dag=dag)
+branching = BranchPythonOperator(task_id='check_Integrity',python_callable=check_logic, op_args=[category,"{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], dag=dag)
 
 error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
 
-push_data = PythonOperator(task_id = "Push.TMDB_Similar_Data", python_callable=blob_data, op_args=[category, "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}", f'http://{SERVER_API}/blob/tmdb'], provide_context=True, dag = dag)
-cleansing_data = PythonOperator(task_id = 'delete.TMDB.movieSimilar.datas',python_callable=erase_loaded_data,op_args=[category, "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], provide_context=True, dag = dag)
+push_data = PythonOperator(task_id = "push_TMDB.Similar_datas", python_callable=blob_data, op_args=[category, "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}", f'http://{SERVER_API}/blob/tmdb'], provide_context=True, dag = dag)
+cleansing_data = PythonOperator(task_id = 'delete_TMDB.Similar_datas',python_callable=erase_loaded_data,op_args=[category, "{{execution_date.add(days=182, hours=9).strftime('%Y-%m-%d')}}"], provide_context=True, dag = dag)
 
-finish = EmptyOperator(task_id = 'Finish.task', dag = dag)
+finish = EmptyOperator(task_id = 'finish_TMDB.Similar_task', dag = dag)
 
 
 start >> get_data >> branching

@@ -9,9 +9,10 @@ import requests
 
 local_tz = pendulum.timezone("Asia/Seoul")
 SERVER_API = Variable.get("SERVER_API")
+DAGS_OWNER = Variable.get('DAGS_OWNER')
 
 default_args = {
-    'owner': 'sms/v0.7.0',
+    'owner': DAGS_OWNER,
     'depends_on_past': True,
     'start_date': datetime(2023, 8, 1, tzinfo=local_tz)
 }
@@ -39,7 +40,7 @@ def load_db(next_execution_date,**context):
 #정합성 체크
 def check_logic(next_execution_date,**context):
     exe_dt=next_execution_date.in_timezone('Asia/Seoul').strftime('%Y-%m-%d')
-    DB_CNT=context['task_instance'].xcom_pull(task_ids='Load.Kopis_to_DB')
+    DB_CNT=context['task_instance'].xcom_pull(task_ids='load_kopis_to_DB')
     api_url = f"http://{SERVER_API}/check/kopis?st_dt={exe_dt}&db_cnt={DB_CNT}"
     request = requests.get(api_url).json()
 
@@ -54,7 +55,7 @@ def get_detail(next_execution_date):
     api_url = f"http://{SERVER_API}/kopis/information?date={exe_dt}"
     request = requests.get(api_url).json()
 
-    print(f"{exe_dt}일, {len(request)}건 공연상세정보 적재 완료")
+    print(f"{exe_dt}일 공연상세정보 적재 완료")
     print(request)
 
 # 데이터 s3에 넣기
@@ -73,17 +74,17 @@ def erase_loaded_data(next_execution_date):
 
 
 
-start = EmptyOperator(task_id = 'Stark.task', dag = dag)
+start = EmptyOperator(task_id = 'start_kopis_data_task', dag = dag)
 
-load_to_db = PythonOperator(task_id="Load.Kopis_to_DB",
+load_to_db = PythonOperator(task_id="load_kopis_to_DB",
                             python_callable=load_db,
                             dag=dag)
 
-save_detail = PythonOperator(task_id="Save.Kopis_Detail",
+save_detail = PythonOperator(task_id="save_kopis_detail",
                             python_callable=get_detail,
                             dag=dag)
 
-branching = BranchPythonOperator(task_id='Check.logic',
+branching = BranchPythonOperator(task_id='check_integrity',
                                  python_callable=check_logic,
                                  dag=dag)
 
@@ -91,15 +92,15 @@ error = EmptyOperator(task_id = 'ERROR', dag = dag)
 done = EmptyOperator(task_id = 'DONE', dag = dag)
 
 # blob 로직
-push_data = PythonOperator(task_id = "Push.Kopis_Data",
+push_data = PythonOperator(task_id = "push_kopis_datas",
                            python_callable=blob_data,
                            dag = dag)
 
-cleansing_data = PythonOperator(task_id = 'delete.KOPIS.performance.datas',
+cleansing_data = PythonOperator(task_id = 'delete_kopis_datas',
                                 python_callable=erase_loaded_data,
                                 dag = dag)
 
-finish = EmptyOperator(task_id = 'Finish.task', trigger_rule='one_success', dag = dag)
+finish = EmptyOperator(task_id = 'finish_kopis_data_task', trigger_rule='one_success', dag = dag)
 
 start >> load_to_db >> save_detail >> branching
 branching >> [error, done]

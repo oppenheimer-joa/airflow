@@ -10,9 +10,10 @@ import mysql.connector, pendulum
 KST = pendulum.timezone("Asia/Seoul")
 year_str = "{{ next_execution_date.strftime('%Y') }}"
 SERVER_API = Variable.get("SERVER_API")
+DAGS_OWNER = Variable.get('DAGS_OWNER')
 
 default_args ={
-    'owner' : 'sms/v0.7.0',
+    'owner' : DAGS_OWNER,
     'depends_on_past' : False,
     'start_date' : datetime(1959, 10, 1, tzinfo=KST)
 }
@@ -56,39 +57,39 @@ def erase_loaded_data(event, year):
     print(output)
    
 start = EmptyOperator(
-    task_id = 'start_task',
+    task_id = 'start_venice_data_task',
     dag = dag)
 
 load_data = PythonOperator(
-    task_id = 'get_IMDB_venice',
+    task_id = 'get_venice_datas',
     python_callable=send_load_curl,
     op_kwargs={"event":"venice",
                "year":year_str},
     dag=dag)
 
 check_data = PythonOperator(
-    task_id = 'check_IMDB_venice',
+    task_id = 'check_venice_datas',
     python_callable=send_check_curl,
     op_kwargs={"event":"venice",
                "year":year_str},
     dag=dag)
 
 push_datas = PythonOperator(
-	task_id = 'blob_IMDB_venice',
+	task_id = 'blob_venice_datas',
 	python_callable = blob_data,
 	op_kwargs={"event":"venice",
                "year":year_str},
 	dag = dag)
 
 cleansing_data = PythonOperator(
-    task_id = 'delete.IMDB.venice.datas',
+    task_id = 'delete_venice_datas',
     python_callable=erase_loaded_data,
     op_kwargs={"event":"venice",
                "year":year_str},
     dag=dag)
 
 finish = EmptyOperator(
-    task_id = 'finish',
+    task_id = 'finish_venice_data_task',
     trigger_rule = 'none_failed',
     dag = dag)
 # Blob

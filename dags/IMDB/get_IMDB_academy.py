@@ -9,9 +9,10 @@ from datetime import datetime
 
 KST = pendulum.timezone('Asia/Seoul')
 SERVER_API = Variable.get("SERVER_API")
+DAGS_OWNER = Variable.get('DAGS_OWNER')
 
 default_args = {
-	'owner': 'sms/v0.7.0',
+	'owner': DAGS_OWNER,
 	'depends_on_past': True,
 	'start_date':datetime(1930, 1, 1, tzinfo=KST)}
 
