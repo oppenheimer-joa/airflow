@@ -58,7 +58,7 @@ deactivate_task = SSHOperator(
 
 check_connection = BashOperator(
     task_id = 'check_original_ip_conn',
-    bash_command = "nc -z -w 1 43.202.116.246 80 && echo '연결 성공' || echo '연결 실패' ",
+    bash_command = "nc -z -w 1 43.202.116.246 22 && echo '연결 성공' || echo '연결 실패' ",
     trigger_rule = 'none_skipped',
     dag=dag)
 
