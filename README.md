@@ -37,3 +37,42 @@ sudo docker build -t airflow:base .
 ```
 sudo docker compose up
 ```
+
+### File Tree
+```
+.
+├── README.md
+├── dags
+│   ├── IMDB
+│   │   ├── bin
+│   │   ├── get_IMDB_academy.py
+│   │   ├── get_IMDB_busan.py
+│   │   ├── get_IMDB_cannes.py
+│   │   └── get_IMDB_venice.py
+│   ├── KOBIS
+│   │   ├── bin
+│   │   └── get_KOBIS.py
+│   ├── KOPIS
+│   │   ├── bin
+│   │   └── get_KOPIS.py
+│   ├── SPARK
+│   │   ├── bin
+│   │   └── spark_ex.py
+│   ├── Spotify
+│   │   ├── bin
+│   │   └── get_SPOTIFY.py
+│   └── TMDB
+│       ├── bin
+│       ├── get_TMDB_movieCredits.py
+│       ├── get_TMDB_movieDetails.py
+│       ├── get_TMDB_movieImages.py
+│       ├── get_TMDB_movieSimilar.py
+│       ├── get_TMDB_peopleDetails.py
+│       ├── insert_TMDB_movieList.py
+│       └── insert_TMDB_peopleList.py
+├── docker-compose.yaml
+├── dockerfile
+├── lib
+│   └── mysql_lib.py
+└── requirements.txt
+```
