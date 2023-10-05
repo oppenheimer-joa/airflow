@@ -18,7 +18,7 @@ default_args = {
     'depends_on_past': True,
     'start_date':datetime(2022, 12, 31, tzinfo=KST)}
 
-dag = DAG('spark_ex',
+dag = DAG('spark_Imdb_whole_join',
       default_args = default_args,
       max_active_runs= 1,
       tags=['스파크','IMDB join','모든 영화제'],

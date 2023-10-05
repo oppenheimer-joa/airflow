@@ -18,7 +18,7 @@ default_args = {
     'depends_on_past': True,
     'start_date': datetime(2023, 8, 1, tzinfo=KST)}
 
-dag = DAG('spark_ex',
+dag = DAG('spark_Kopis_transform',
       default_args = default_args,
       max_active_runs= 1,
       tags=['스파크','공연 transform','KOPIS'],
