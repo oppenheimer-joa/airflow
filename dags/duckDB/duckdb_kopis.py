@@ -24,7 +24,7 @@ dag = DAG('load_duckdb_kopis',
       default_args = default_args,
       max_active_runs= 1,
       tags=['duckdb','데이터 로드','kopis'],
-      schedule="0 6 * * 1", ## 매주 월요일 AM 6:00 에 실행
+      schedule="30 2 * * 1", ## 매주 월요일 AM 2:30 에 실행
       )
 
 sshHook = SSHHook(ssh_conn_id='hooniegit', cmd_timeout=15)

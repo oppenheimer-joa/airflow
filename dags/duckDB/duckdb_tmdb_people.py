@@ -24,7 +24,7 @@ dag = DAG('load_duckdb_tmdb_movie',
       default_args = default_args,
       max_active_runs= 1,
       tags=['duckdb','데이터 로드','TMDB','People'],
-      schedule="0 6 * * 5", ## 매주 금요일 AM 6:00 에 실행
+      schedule="0 11 * * 5", ## 매주 금요일 AM 11:00 에 실행
       )
 
 sshHook = SSHHook(ssh_conn_id='hooniegit', cmd_timeout=15)

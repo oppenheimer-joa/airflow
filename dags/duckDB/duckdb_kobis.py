@@ -24,7 +24,7 @@ dag = DAG('load_duckdb_boxOffice',
       default_args = default_args,
       max_active_runs= 1,
       tags=['duckdb','데이터 로드','boxOffice'],
-      schedule="0 3 * * *", ## 매일 AM 3:00 에 실행
+      schedule="30 1 * * *", ## 매일 AM 1:30 에 실행
       )
 
 sshHook = SSHHook(ssh_conn_id='hooniegit', cmd_timeout=15)
