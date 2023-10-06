@@ -58,7 +58,7 @@ fail_conn = EmptyOperator(
 
 
 ssh_task = SSHOperator(
-    task_id = 'ssh_test',
+    task_id = 'load_duckdb_kobis',
     command = f"python3 {SCRIPT_PATH}/duck_create_kobis_boxoffice.py",
     ssh_hook = sshHook,
     do_xcom_push=False,

@@ -58,7 +58,7 @@ fail_conn = EmptyOperator(
 
 
 ssh_task = SSHOperator(
-    task_id = 'ssh_test',
+    task_id = 'load_duckdb_tmdb_people',
     command = f"python3 {SCRIPT_PATH}/duck_create_tmdb_people.py",
     ssh_hook = sshHook,
     do_xcom_push=False,
