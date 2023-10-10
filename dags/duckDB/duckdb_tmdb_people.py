@@ -20,7 +20,7 @@ default_args = {
     'start_date':datetime(2023, 10, 1, tzinfo=KST)
     }
 
-dag = DAG('load_duckdb_tmdb_movie',
+dag = DAG('load_duckdb_tmdb_people',
       default_args = default_args,
       max_active_runs= 1,
       tags=['duckdb','데이터 로드','TMDB','People'],
