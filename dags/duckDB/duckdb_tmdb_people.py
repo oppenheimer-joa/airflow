@@ -27,7 +27,7 @@ dag = DAG('load_duckdb_tmdb_people',
       schedule="0 11 * * 5", ## 매주 금요일 AM 11:00 에 실행
       )
 
-sshHook = SSHHook(ssh_conn_id='hooniegit', cmd_timeout=15)
+sshHook = SSHHook(ssh_conn_id='hooniegit', cmd_timeout=60)
 
 def check_server():
     import subprocess
