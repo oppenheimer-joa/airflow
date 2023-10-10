@@ -24,8 +24,8 @@ dag = DAG('spark_Kopis_transform',
       tags=['스파크','공연 transform','KOPIS'],
       schedule_interval= '0 13 * * 1')
 
-sshHook1 = SSHHook(ssh_conn_id='sms-1')
-sshHook2 = SSHHook(ssh_conn_id='sms-1-vpn', cmd_timeout=15)
+sshHook1 = SSHHook(ssh_conn_id='sms-1', cmd_timeout=None)
+sshHook2 = SSHHook(ssh_conn_id='sms-1-vpn', cmd_timeout=1800)
 
 
 start_task = EmptyOperator(

@@ -25,8 +25,8 @@ dag = DAG('spark_Tmdb_cdis_join',
       tags=['스파크','TMDB join','cdis'],
       schedule_interval= '0 8 * * 5')
 
-sshHook1 = SSHHook(ssh_conn_id='sms-1')
-sshHook2 = SSHHook(ssh_conn_id='sms-1-vpn', cmd_timeout=15)
+sshHook1 = SSHHook(ssh_conn_id='sms-1', cmd_timeout=None)
+sshHook2 = SSHHook(ssh_conn_id='sms-1-vpn', cmd_timeout=1800)
 
 
 start_task = EmptyOperator(

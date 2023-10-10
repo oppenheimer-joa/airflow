@@ -24,8 +24,8 @@ dag = DAG('spark_Imdb_busan_transform',
       tags=['스파크','IMDB transform','busan'],
       schedule_interval= '0 15 1 11 *')
 
-sshHook1 = SSHHook(ssh_conn_id='sms-1')
-sshHook2 = SSHHook(ssh_conn_id='sms-1-vpn', cmd_timeout=15)
+sshHook1 = SSHHook(ssh_conn_id='sms-1', cmd_timeout=None)
+sshHook2 = SSHHook(ssh_conn_id='sms-1-vpn', cmd_timeout=1800)
 
 
 start_task = EmptyOperator(

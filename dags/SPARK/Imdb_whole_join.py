@@ -24,8 +24,8 @@ dag = DAG('spark_Imdb_whole_join',
       tags=['스파크','IMDB join','모든 영화제'],
       schedule_interval= '0 18 31 12 *')
 
-sshHook1 = SSHHook(ssh_conn_id='sms-1')
-sshHook2 = SSHHook(ssh_conn_id='sms-1-vpn', cmd_timeout=15)
+sshHook1 = SSHHook(ssh_conn_id='sms-1', cmd_timeout=None)
+sshHook2 = SSHHook(ssh_conn_id='sms-1-vpn', cmd_timeout=1800)
 
 
 start_task = EmptyOperator(
